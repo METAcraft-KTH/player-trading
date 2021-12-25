@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "se.leddy231.playertrading.mixin",
+  "compatibilityLevel": "JAVA_16",
+  "mixins": [
+    "BlockEntityMixin",
+    "BarrelBlockMixin",
+    "BarrelEntityMixin",
+    "SignEntityMixin",
+    "MerchantScreenHandlerMixin",
+    "MerchantScreenHandlerAccessor"
+  ],
+  "client": [
+    
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
