@@ -10,8 +10,10 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import se.leddy231.playertrading.AugmentedBarrelEntity;
 import se.leddy231.playertrading.PlayerTrading;
+import se.leddy231.playertrading.interfaces.IExpansionBarrelEntity;
+import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
+import se.leddy231.playertrading.interfaces.IExpansionBarrelEntity.BarrelType;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,14 +29,15 @@ public class BarrelBlockMixin {
 			PlayerTrading.LOGGER.error("Somehow, a BarrelBlockEntity was not returned from a BarrelBlock");
 			return;
 		}
-		AugmentedBarrelEntity barrelEntity = (AugmentedBarrelEntity) (Object) entity;
+		IExpansionBarrelEntity barrelEntity = (IExpansionBarrelEntity) (Object) entity;
 		
-		if (barrelEntity.isShop()) {
-			if (barrelEntity.getShopOwner() == player.getUuid() && !player.isSneaking()) {
+		if (barrelEntity.getType() == BarrelType.SHOP) {
+			if (barrelEntity.getOwner() == player.getUuid() && !player.isSneaking()) {
 				return;
 			}
 			ci.setReturnValue(ActionResult.SUCCESS);
-			barrelEntity.getShopMerchant().openShop(player);
+			IShopBarrelEntity shop = (IShopBarrelEntity) barrelEntity;
+			shop.getShopMerchant().openShop(player);
 		}
 
 	}

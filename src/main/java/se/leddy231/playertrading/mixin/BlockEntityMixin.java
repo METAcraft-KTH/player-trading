@@ -7,7 +7,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
-import se.leddy231.playertrading.AugmentedBarrelEntity;
+import se.leddy231.playertrading.interfaces.IExpansionBarrelEntity;
+import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
 
 @Mixin(BlockEntity.class)
 public class BlockEntityMixin {
@@ -16,8 +17,11 @@ public class BlockEntityMixin {
     public void onMarkDirty(CallbackInfo callback) {
         BlockEntity entity = (BlockEntity) (Object) this;
         if (entity instanceof BarrelBlockEntity) {
-            AugmentedBarrelEntity barrelEntity = (AugmentedBarrelEntity) entity;
-            barrelEntity.onInventoryChange();
+            IExpansionBarrelEntity barrelEntity = (IExpansionBarrelEntity) entity;
+            IShopBarrelEntity shop = barrelEntity.getShop();
+            if(shop != null) {
+                shop.onInventoryChange();
+            }
         }
     }
 }
