@@ -14,7 +14,7 @@ The barrels inventory is divided into 9 sections (here highlighted in pink), wit
 
 Place the amount of items(s) you wish to recieve in the first and second slots. The second one can be empty, if you only want one type of item as payment. In the last slot you place the item you are selling. You can preview the trades (or trade with yourself) by sneaking and opening the barrel!
 
-When a trade is completed the result of the trade (slot 3) will be given to the customer, and removed from the barrel. The payment items(s) will be merged with those already in the barrel.
+When a trade is completed the result of the trade (slot 3) will be given to the customer, and removed from the barrel. The payment items(s) will be merged with those already in the barrel.  
 ![Shop barrel trades](github/pictures/shop_trades.png)
 
 This simple setup has some limitations, which can be overcome with extensions that will be covered shortly  
@@ -52,12 +52,12 @@ The following flowcharts shows the decision process
 
 ## Pictures
 
-A simple trade station for some armor and iron
+### A simple trade station for some armor and iron  
 ![Simple trade](github/pictures/example_simple_barrel.png)
 ![Simple trade](github/pictures/example_simple.png)
 
 
-A large scale trade setup, perhaps connected to a automatic farm?
+### A large scale trade setup, perhaps connected to a automatic farm?  
 ![Advanced trade](github/pictures/example_advanced.png)
 
 
