@@ -12,6 +12,7 @@ import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import se.leddy231.playertrading.*;
@@ -22,14 +23,6 @@ import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
 public class BarrelEntityMixin implements IShopBarrelEntity {
     private static final String SHOP_OWNER_NBT_TAG = "shop_owner";
     private static final String TYPE_NBT_TAG = "shop_barrely_type";
-    private static final Vec3i[] neighbours = new Vec3i[] {
-            new Vec3i(1, 0, 0),
-            new Vec3i(0, 1, 0),
-            new Vec3i(0, 0, 1),
-            new Vec3i(-1, 0, 0),
-            new Vec3i(0, -1, 0),
-            new Vec3i(0, 0, -1),
-    };
     public UUID owner;
     public ShopMerchant shopMerchant;
     public BarrelType type = BarrelType.NONE;
@@ -89,8 +82,8 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
         BarrelBlockEntity entity = getEntity();
         World world = entity.getWorld();
         BlockPos pos = entity.getPos();
-        for (Vec3i offset : neighbours) {
-            BlockPos newPos = pos.add(offset);
+        for (Direction dir : Direction.values()) {
+            BlockPos newPos = pos.offset(dir);
             if (!(world.getBlockState(newPos).getBlock() instanceof BarrelBlock))
                 continue;
             IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) world.getBlockEntity(newPos);
@@ -145,8 +138,8 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
             BarrelBlockEntity entity = getEntity();
             World world = entity.getWorld();
             BlockPos pos = entity.getPos();
-            for (Vec3i offset : neighbours) {
-                BlockPos newPos = pos.add(offset);
+            for (Direction dir : Direction.values()) {
+                BlockPos newPos = pos.offset(dir);
                 if (!(world.getBlockState(newPos).getBlock() instanceof BarrelBlock))
                     continue;
                 IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) world.getBlockEntity(newPos);

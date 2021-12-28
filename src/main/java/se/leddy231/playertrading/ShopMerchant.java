@@ -15,6 +15,7 @@ import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
 import se.leddy231.playertrading.mixin.MerchantScreenHandlerAccessor;
 
 public class ShopMerchant implements Merchant {
+    private static final String SHOP_TITLE = "Barrel shop";
     @Nullable
     public PlayerEntity currentCustomer;
     public IShopBarrelEntity shopEntity;
@@ -22,6 +23,8 @@ public class ShopMerchant implements Merchant {
     // the screen is closed
     // Otherwise, the client game crashes
     public ShopTradeOffer[] oldTrades;
+    // Ignore inventory refresh while moving thins around in the inventory
+    private boolean ignoreRefresh = false;
 
     public ShopMerchant(IShopBarrelEntity shopEntity) {
         super();
@@ -50,7 +53,7 @@ public class ShopMerchant implements Merchant {
 
     public void openShop(PlayerEntity player) {
         setCurrentCustomer(player);
-        sendOffers(player, new LiteralText("Shop!"), 0);
+        sendOffers(player, new LiteralText(SHOP_TITLE), 0);
     }
 
     // Optimization: cache this and only refresh on barrel inventory changes
@@ -100,7 +103,7 @@ public class ShopMerchant implements Merchant {
             return ShopTradeOffer.invalid(first, second, result, index, error);
         }
         if(!secondCanMerge && !secondFitsInOutputBarrel) {
-            String error = "the first payment item(s) does not stack with itself";
+            String error = "the second payment item(s) does not stack with itself";
             if (outputBarrel != null) {
                 error += ", and does not fit in Output barrel";
             }
@@ -127,6 +130,9 @@ public class ShopMerchant implements Merchant {
     }
 
     public void refreshTrades() {
+        if (ignoreRefresh)
+            return;
+        PlayerTrading.LOGGER.info("refresh");
         int syncid = currentCustomer.currentScreenHandler.syncId;
         currentCustomer.sendTradeOffers(syncid, getOffers(), 0, 0, this.isLeveledMerchant(), this.canRefreshTrades());
         MerchantScreenHandlerAccessor accessor = (MerchantScreenHandlerAccessor) currentCustomer.currentScreenHandler;
@@ -134,6 +140,7 @@ public class ShopMerchant implements Merchant {
     }
 
     public void trade(TradeOffer var1) {
+        ignoreRefresh = true;
         ShopTradeOffer offer = (ShopTradeOffer) var1;
         int firstSlot = offer.shopBarrelInventoryIndex;
         int secondSlot = firstSlot + 1;
@@ -173,6 +180,7 @@ public class ShopMerchant implements Merchant {
             shopBarrel.setStack(resultSlot, ItemStack.EMPTY);
         }
         offer.use();
+        ignoreRefresh = false;
         refreshTrades();
     }
 
