@@ -10,10 +10,10 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import se.leddy231.playertrading.BarrelType;
 import se.leddy231.playertrading.PlayerTrading;
-import se.leddy231.playertrading.interfaces.IExpansionBarrelEntity;
+import se.leddy231.playertrading.interfaces.IAugmentedBarrelEntity;
 import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
-import se.leddy231.playertrading.interfaces.IExpansionBarrelEntity.BarrelType;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,17 +22,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(BarrelBlock.class)
 public class BarrelBlockMixin {
-    @Inject(at = @At("HEAD"), method = "onUse", cancellable = true)
-	private void onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> ci) {
+	@Inject(at = @At("HEAD"), method = "onUse", cancellable = true)
+	private void onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit,
+			CallbackInfoReturnable<ActionResult> ci) {
 		BlockEntity entity = world.getBlockEntity(pos);
 		if (!(entity instanceof BarrelBlockEntity)) {
 			PlayerTrading.LOGGER.error("Somehow, a BarrelBlockEntity was not returned from a BarrelBlock");
 			return;
 		}
-		IExpansionBarrelEntity barrelEntity = (IExpansionBarrelEntity) (Object) entity;
-		
+		IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) (Object) entity;
+
 		if (barrelEntity.getType() == BarrelType.SHOP) {
-			if (barrelEntity.getOwner() == player.getUuid() && !player.isSneaking()) {
+			if (barrelEntity.getOwner().equals(player.getUuid()) && !player.isSneaking()) {
 				return;
 			}
 			ci.setReturnValue(ActionResult.SUCCESS);

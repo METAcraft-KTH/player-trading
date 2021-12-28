@@ -2,8 +2,8 @@ package se.leddy231.playertrading;
 
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -11,24 +11,26 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.village.Merchant;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
+import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
+import se.leddy231.playertrading.mixin.MerchantScreenHandlerAccessor;
 
 public class ShopMerchant implements Merchant {
     @Nullable
     public PlayerEntity currentCustomer;
-    public BarrelBlockEntity tradesChest;
+    public IShopBarrelEntity shopEntity;
     // Trades that expire/are used up needs to be kept inte the trades list until
     // the screen is closed
     // Otherwise, the client game crashes
     public ShopTradeOffer[] oldTrades;
 
-    public ShopMerchant(BarrelBlockEntity tradesChest) {
+    public ShopMerchant(IShopBarrelEntity shopEntity) {
         super();
-        this.tradesChest = tradesChest;
+        this.shopEntity = shopEntity;
         clearOldTrades();
     }
 
     public void clearOldTrades() {
-        oldTrades = new ShopTradeOffer[tradesChest.size()];
+        oldTrades = new ShopTradeOffer[shopEntity.getShopBarrel().size()];
     }
 
     public void onScreenClose() {
@@ -51,103 +53,157 @@ public class ShopMerchant implements Merchant {
         sendOffers(player, new LiteralText("Shop!"), 0);
     }
 
+    // Optimization: cache this and only refresh on barrel inventory changes
     public TradeOfferList getOffers() {
         TradeOfferList list = new TradeOfferList();
+        Inventory outputBarrel = shopEntity.getOutputBarrel();
 
-        if (tradesChest != null) {
-            int maxIndex = tradesChest.size() - 1;
-            int index = 0;
-            while (index + 2 <= maxIndex) {
-                ShopTradeOffer offer = getOfferFromIndex(index);
-                if (offer != null) {
-                    list.add(offer);
-                }
-                index += 3;
+        int maxIndex = shopEntity.getShopBarrel().size() - 1;
+        int index = 0;
+        while (index + 2 <= maxIndex) {
+            ShopTradeOffer offer = getCachedOfferFromIndex(index, outputBarrel);
+            if (offer != null) {
+                list.add(offer);
             }
+            index += 3;
         }
         return list;
     }
 
-    private ShopTradeOffer getOfferFromIndex(int index) {
-        if (oldTrades[index] != null) {
-            return oldTrades[index];
+    private ShopTradeOffer getCachedOfferFromIndex(int index, Inventory outputBarrel) {
+        ShopTradeOffer newOffer = getOfferFromIndex(index, outputBarrel);
+        if (newOffer != null) {
+            oldTrades[index] = newOffer.asUsed();
+            return newOffer;
         }
-        ItemStack first = tradesChest.getStack(index).copy();
-        ItemStack second = tradesChest.getStack(index + 1).copy();
-        ItemStack result = tradesChest.getStack(index + 2).copy();
+        return oldTrades[index];
+    }
+
+    private ShopTradeOffer getOfferFromIndex(int index, Inventory outputBarrel) {
+        Inventory shopBarrel = shopEntity.getShopBarrel();
+        ItemStack first = shopBarrel.getStack(index).copy();
+        ItemStack second = shopBarrel.getStack(index + 1).copy();
+        ItemStack result = shopBarrel.getStack(index + 2).copy();
         if (first.isEmpty() || result.isEmpty()) {
             return null;
         }
-        boolean fitsInOutputChest = false; // TODO: implement output chest addition
-        if (first.getMaxCount() <= 1 && !fitsInOutputChest) {
-            return ShopTradeOffer.invalid(first, second, result, index,
-                    "the payment item does not stack, and does not fit in output chest");
+        boolean firstCanMerge = Utils.canStacksCombine(first, first);
+        boolean secondCanMerge = Utils.canStacksCombine(second, second);
+        boolean firstFitsInOutputBarrel = Utils.canPutInInventory(first, outputBarrel);
+        boolean secondFitsInOutputBarrel = Utils.canPutInInventory(second, outputBarrel);
+
+        if(!firstCanMerge && !firstFitsInOutputBarrel) {
+            String error = "the first payment item(s) does not stack with itself";
+            if (outputBarrel != null) {
+                error += ", and does not fit in Output barrel";
+            }
+            return ShopTradeOffer.invalid(first, second, result, index, error);
         }
-        boolean canStackSelf = first.getCount() <= first.getMaxCount() / 2;
-        if (!canStackSelf && !fitsInOutputChest) {
-            return ShopTradeOffer.invalid(first, second, result, index,
-                    "the payment items stack size is too big to merge with itself, and does not fit in output chest");
+        if(!secondCanMerge && !secondFitsInOutputBarrel) {
+            String error = "the first payment item(s) does not stack with itself";
+            if (outputBarrel != null) {
+                error += ", and does not fit in Output barrel";
+            }
+            return ShopTradeOffer.invalid(first, second, result, index, error);
         }
         return ShopTradeOffer.valid(first, second, result, index);
+    }
 
+    public void checkTrades(PlayerEntity player) {
+        TradeOfferList offers = getOffers();
+        boolean allValid = true;
+        for (TradeOffer offer : offers) {
+            ShopTradeOffer shopOffer = (ShopTradeOffer) offer;
+            if (shopOffer.valid)
+                continue;
+            allValid = false;
+            int slot = shopOffer.shopBarrelInventoryIndex + 1;
+            Utils.sendMessage(player,
+                    "Offer at slot " + slot + "-" + (slot + 2) + " is invalid because " + shopOffer.invalidReason);
+        }
+        if (allValid) {
+            Utils.sendMessage(player, "All trades are valid");
+        }
     }
 
     public void refreshTrades() {
         int syncid = currentCustomer.currentScreenHandler.syncId;
         currentCustomer.sendTradeOffers(syncid, getOffers(), 0, 0, this.isLeveledMerchant(), this.canRefreshTrades());
+        MerchantScreenHandlerAccessor accessor = (MerchantScreenHandlerAccessor) currentCustomer.currentScreenHandler;
+        accessor.getMerchantInventory().updateOffers();
+    }
+
+    public void trade(TradeOffer var1) {
+        ShopTradeOffer offer = (ShopTradeOffer) var1;
+        int firstSlot = offer.shopBarrelInventoryIndex;
+        int secondSlot = firstSlot + 1;
+        int resultSlot = firstSlot + 2;
+        Inventory shopBarrel = shopEntity.getShopBarrel();
+        Inventory outputBarrel = shopEntity.getOutputBarrel();
+
+        ItemStack first = offer.getFirst().copy();
+        ItemStack second = offer.getSecond().copy();
+        ItemStack result = offer.getResult().copy();
+        boolean firstValid = ItemStack.areEqual(shopBarrel.getStack(firstSlot), first);
+        boolean secondValid = ItemStack.areEqual(shopBarrel.getStack(secondSlot), second);
+        boolean resultValid = ItemStack.areEqual(shopBarrel.getStack(resultSlot), result);
+        if (!firstValid) {
+            PlayerTrading.LOGGER.error("First items of a trade mismatched!");
+        }
+        if (!secondValid) {
+            PlayerTrading.LOGGER.error("Second items of a trade mismatched!");
+        }
+        if (!resultValid) {
+            PlayerTrading.LOGGER.error("Result items of a trade mismatched!");
+        }
+        boolean pullResultFromStock = true;
+        if (!Utils.tryPutInInventory(first, outputBarrel)) {
+            shopBarrel.setStack(firstSlot, Utils.combine(first, first));
+            pullResultFromStock = false;
+        }
+        if (!Utils.tryPutInInventory(second, outputBarrel)) {
+            shopBarrel.setStack(secondSlot, Utils.combine(second, second));
+            pullResultFromStock = false;
+        }
+        boolean resultRemoved = false;
+        if (pullResultFromStock) {
+           resultRemoved = Utils.tryPullFromInventory(result, shopEntity.getStockBarrel());
+        }
+        if(!resultRemoved) {
+            shopBarrel.setStack(resultSlot, ItemStack.EMPTY);
+        }
+        offer.use();
+        refreshTrades();
     }
 
     @Override
     public void setOffersFromServer(TradeOfferList var1) {
     }
 
-    public void trade(TradeOffer var1) {
-        ShopTradeOffer offer = (ShopTradeOffer) var1;
-        int index = offer.tradeChestInventoryIndex;
-        boolean first = ItemStack.areEqual(tradesChest.getStack(index), offer.getFirst());
-        boolean second = ItemStack.areEqual(tradesChest.getStack(index + 1), offer.getSecond());
-        boolean result = ItemStack.areEqual(tradesChest.getStack(index + 2), offer.getResult());
-        if (!first) {
-            PlayerTrading.LOGGER.error("First items of trade mismatch");
-        }
-        if (!second) {
-            PlayerTrading.LOGGER.error("Second items of trade mismatch");
-        }
-        if (!result) {
-            PlayerTrading.LOGGER.error("Result items of trade mismatch");
-        }
-        if (first && second && result) {
-            ItemStack firstPayout = tradesChest.getStack(index);
-            ItemStack secondPayout = tradesChest.getStack(index + 1);
-            firstPayout.setCount(firstPayout.getCount() * 2);
-            secondPayout.setCount(secondPayout.getCount() * 2);
-            tradesChest.setStack(index, firstPayout);
-            tradesChest.setStack(index + 1, secondPayout);
-            tradesChest.setStack(index + 2, ItemStack.EMPTY);
-        }
-        offer.use();
-        oldTrades[index] = offer;
-        refreshTrades();
-    }
-
+    @Override
     public void onSellingItem(ItemStack var1) {
     }
 
+    @Override
     public int getExperience() {
         return 0;
     }
 
+    @Override
     public void setExperienceFromServer(int var1) {
     }
 
+    @Override
     public boolean isLeveledMerchant() {
         return false;
     }
 
+    @Override
     public SoundEvent getYesSound() {
         return SoundEvents.ENTITY_VILLAGER_YES;
     }
 
+    @Override
     public boolean isClient() {
         return false;
     }

@@ -15,8 +15,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-import se.leddy231.playertrading.interfaces.IExpansionBarrelEntity;
-import se.leddy231.playertrading.interfaces.IExpansionBarrelEntity.BarrelType;
+import se.leddy231.playertrading.interfaces.IAugmentedBarrelEntity;
+import se.leddy231.playertrading.BarrelType;
 
 @Mixin(SignBlockEntity.class)
 public class SignEntityMixin {
@@ -27,8 +27,8 @@ public class SignEntityMixin {
         Text text = signEntity.getTextOnRow(0, false);
         // Has shop tag on sign
         BarrelType type = BarrelType.fromSignTag(text.asString());
-        if(type == BarrelType.NONE)
-        return;
+        if (type == BarrelType.NONE)
+            return;
 
         World world = signEntity.getWorld();
         BlockState signState = world.getBlockState(signEntity.getPos());
@@ -44,7 +44,7 @@ public class SignEntityMixin {
         // Sign is attached to a barrel
         if (!(barrelState.getBlock() instanceof BarrelBlock))
             return;
-        IExpansionBarrelEntity barrelEntity = (IExpansionBarrelEntity) world.getBlockEntity(pos);
-        barrelEntity.tryCreate(player, type);
+        IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) world.getBlockEntity(pos);
+        barrelEntity.activate(player, type);
     }
 }

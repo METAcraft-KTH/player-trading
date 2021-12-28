@@ -4,7 +4,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.village.TradeOffer;
 
 public class ShopTradeOffer extends TradeOffer{
-    public int tradeChestInventoryIndex;
+    public int shopBarrelInventoryIndex;
     public boolean valid;
     public String invalidReason;
 
@@ -20,7 +20,7 @@ public class ShopTradeOffer extends TradeOffer{
         super(first, second, result, 0, valid ? 1 : 0, 0, 1, 0);
         this.valid = valid;
         this.invalidReason = invalidReason;
-        tradeChestInventoryIndex = index;
+        shopBarrelInventoryIndex = index;
     }
 
     public ItemStack getFirst() {
@@ -33,5 +33,9 @@ public class ShopTradeOffer extends TradeOffer{
 
     public ItemStack getResult() {
         return getSellItem();
+    }
+
+    public ShopTradeOffer asUsed() {
+        return ShopTradeOffer.invalid(getFirst(), getSecond(), getResult(), shopBarrelInventoryIndex, "this trade is old (someone has the trade screen still open)");
     }
 }

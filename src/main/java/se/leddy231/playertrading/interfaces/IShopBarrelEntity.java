@@ -1,13 +1,15 @@
 package se.leddy231.playertrading.interfaces;
 
-import se.leddy231.playertrading.ShopExpansion;
+import net.minecraft.block.entity.BarrelBlockEntity;
 import se.leddy231.playertrading.ShopMerchant;
 
-public interface IShopBarrelEntity extends IExpansionBarrelEntity {
+public interface IShopBarrelEntity extends IAugmentedBarrelEntity {
 
     public abstract ShopMerchant getShopMerchant();
 
-    public abstract void linkToExpansion(ShopExpansion expansion);
+    public abstract BarrelBlockEntity getOutputBarrel();
 
-    public abstract void onInventoryChange();
+    public abstract BarrelBlockEntity getStockBarrel();
+
+    public abstract BarrelBlockEntity getShopBarrel();
 }

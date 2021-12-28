@@ -11,14 +11,11 @@ import net.minecraft.block.BarrelBlock;
 import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOfferList;
 import net.minecraft.world.World;
 import se.leddy231.playertrading.*;
-import se.leddy231.playertrading.interfaces.IExpansionBarrelEntity;
+import se.leddy231.playertrading.interfaces.IAugmentedBarrelEntity;
 import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
 
 @Mixin(BarrelBlockEntity.class)
@@ -35,10 +32,7 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
     };
     public UUID owner;
     public ShopMerchant shopMerchant;
-    public IShopBarrelEntity shop;
     public BarrelType type = BarrelType.NONE;
-    public ShopExpansion output;
-    public ShopExpansion stock;
 
     @Override
     public BarrelType getType() {
@@ -51,8 +45,33 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
     }
 
     @Override
-    public IShopBarrelEntity getShop() {
-        return shop;
+    public BarrelBlockEntity getOutputBarrel() {
+        IAugmentedBarrelEntity entity = getNeighbourByType(BarrelType.OUTPUT);
+        if (entity != null) {
+            return (BarrelBlockEntity) entity;
+        }
+        return null;
+    }
+
+    @Override
+    public BarrelBlockEntity getStockBarrel() {
+        IAugmentedBarrelEntity entity = getNeighbourByType(BarrelType.STOCK);
+        if (entity != null) {
+            return (BarrelBlockEntity) entity;
+        }
+        return null;
+    }
+
+    @Override
+    public BarrelBlockEntity getShopBarrel() {
+        if (type == BarrelType.SHOP) {
+            return getEntity();
+        }
+        return null;
+    }
+
+    private BarrelBlockEntity getEntity() {
+        return (BarrelBlockEntity) (Object) this;
     }
 
     @Override
@@ -61,118 +80,81 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
             return null;
         }
         if (shopMerchant == null) {
-            shopMerchant = new ShopMerchant((BarrelBlockEntity) (Object) this);
+            shopMerchant = new ShopMerchant(this);
         }
         return shopMerchant;
     }
 
-    public void sendMessage(PlayerEntity player, String text) {
-        player.sendMessage(new LiteralText(text), false);
-    }
-
-    @Override
-    public void tryCreate(PlayerEntity player, BarrelType newType) {
-        if (type != BarrelType.NONE) {
-            if (owner == player.getUuid()) {
-                playerTroubleshoot(player);
-            } else {
-                sendMessage(player, "Someone already owns this");
-            }
-        }
-        owner = player.getUuid();
-        type = newType;
-        BarrelBlockEntity entity = (BarrelBlockEntity) (Object) this;
-        entity.markDirty();
-        switch (type) {
-            case NONE:
-                sendMessage(player, "This is not a shop barrel");
-                break;
-            case SHOP:
-                sendMessage(player, "Shop created");
-                break;
-            case OUTPUT:
-                sendMessage(player, "Output barrel created");
-                break;
-            case STOCK:
-                sendMessage(player, "Stock barrel created");
-                break;
-        }
-        if (type.isExpansionType()) {
-            linkExpansions(player);
-        }
-
-    }
-
-    public void playerTroubleshoot(PlayerEntity player) {
-        switch (type) {
-            case NONE:
-                sendMessage(player, "This is not a shop barrel");
-                break;
-            case SHOP:
-                checkTrades(player);
-                break;
-            case OUTPUT:
-                sendMessage(player, "You own this output barrel");
-                break;
-            case STOCK:
-                sendMessage(player, "You own this stock barrel");
-                break;
-        }
-    }
-
-    public void checkTrades(PlayerEntity player) {
-        TradeOfferList offers = getShopMerchant().getOffers();
-        boolean allValid = true;
-        for (TradeOffer offer : offers) {
-            ShopTradeOffer shopOffer = (ShopTradeOffer) offer;
-            if (shopOffer.valid)
-                continue;
-            allValid = false;
-            int slot = shopOffer.tradeChestInventoryIndex + 1;
-            sendMessage(player,
-                    "Offer at slot " + slot + "-" + (slot + 2) + " is invalid because " + shopOffer.invalidReason);
-        }
-        if (allValid) {
-            sendMessage(player, "All trades are valid");
-        }
-    }
-
-    public void linkExpansions(PlayerEntity player) {
-        if (!type.isExpansionType())
-            return;
-
-        BarrelBlockEntity entity = (BarrelBlockEntity) (Object) this;
+    public IAugmentedBarrelEntity getNeighbourByType(BarrelType type) {
+        BarrelBlockEntity entity = getEntity();
         World world = entity.getWorld();
         BlockPos pos = entity.getPos();
         for (Vec3i offset : neighbours) {
             BlockPos newPos = pos.add(offset);
             if (!(world.getBlockState(newPos).getBlock() instanceof BarrelBlock))
                 continue;
-            IExpansionBarrelEntity barrelEntity = (IExpansionBarrelEntity) world.getBlockEntity(newPos);
-            if (barrelEntity.getType() != BarrelType.SHOP)
-                continue;
-            IShopBarrelEntity shop = (IShopBarrelEntity) barrelEntity;
-            ShopExpansion expansion = new ShopExpansion(offset, this);
-            shop.linkToExpansion(expansion);
-            sendMessage(player, "Shop at " + newPos + " linked to " + type.typeName() + " at " + pos);
+            IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) world.getBlockEntity(newPos);
+            if (barrelEntity.getType() == type)
+                return barrelEntity;
+        }
+        return null;
+    }
+
+    @Override
+    public void activate(PlayerEntity player, BarrelType signType) {
+        if (owner != null) {
+            if (owner.equals(player.getUuid())) {
+                playerTroubleshoot(player);
+            } else {
+                Utils.sendMessage(player, "Someone already owns this");
+            }
+        } else {
+            create(player, signType);
         }
     }
 
-    public void linkToExpansion(ShopExpansion expansion) {
-        if (type != BarrelType.SHOP || !expansion.entity.getType().isExpansionType())
-            return;
+    public void create(PlayerEntity player, BarrelType newType) {
+        owner = player.getUuid();
+        type = newType;
 
-        if (expansion.entity.getType() == BarrelType.OUTPUT) {
-            output = expansion;
-        } else {
-            stock = expansion;
+        BarrelBlockEntity entity = (BarrelBlockEntity) (Object) this;
+        entity.markDirty();
+
+        Utils.sendMessage(player, newType.typeName() + " barrel created");
+    }
+
+    public void playerTroubleshoot(PlayerEntity player) {
+        Utils.sendMessage(player, type.typeName() + " barrel owned by you");
+        if(type == BarrelType.SHOP) {
+            BarrelBlockEntity output = getOutputBarrel();
+            if (output != null) {
+                Utils.sendMessage(player, "Sees Output barrel at " + Utils.posToString(output.getPos()));
+            }
+            BarrelBlockEntity stock = getStockBarrel();
+            if (stock != null) {
+                Utils.sendMessage(player, "Sees Stock barrel at " + Utils.posToString(stock.getPos()));
+            }
+            getShopMerchant().checkTrades(player);
         }
-        onInventoryChange();
     }
 
     @Override
     public void onInventoryChange() {
-        if (type == BarrelType.SHOP && owner != null && shopMerchant != null && shopMerchant.currentCustomer != null) {
+        if (type.isExpansionType()) {
+            //Notify neightbours
+            BarrelBlockEntity entity = getEntity();
+            World world = entity.getWorld();
+            BlockPos pos = entity.getPos();
+            for (Vec3i offset : neighbours) {
+                BlockPos newPos = pos.add(offset);
+                if (!(world.getBlockState(newPos).getBlock() instanceof BarrelBlock))
+                    continue;
+                IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) world.getBlockEntity(newPos);
+                if (barrelEntity.getType() == BarrelType.SHOP)
+                    barrelEntity.onInventoryChange();
+            }
+        }
+        if (type == BarrelType.SHOP && getShopMerchant().currentCustomer != null) {
             shopMerchant.refreshTrades();
         }
     }
