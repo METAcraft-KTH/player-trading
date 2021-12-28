@@ -132,7 +132,6 @@ public class ShopMerchant implements Merchant {
     public void refreshTrades() {
         if (ignoreRefresh)
             return;
-        PlayerTrading.LOGGER.info("refresh");
         int syncid = currentCustomer.currentScreenHandler.syncId;
         currentCustomer.sendTradeOffers(syncid, getOffers(), 0, 0, this.isLeveledMerchant(), this.canRefreshTrades());
         MerchantScreenHandlerAccessor accessor = (MerchantScreenHandlerAccessor) currentCustomer.currentScreenHandler;
