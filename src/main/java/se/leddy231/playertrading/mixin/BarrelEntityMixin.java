@@ -2,6 +2,8 @@ package se.leddy231.playertrading.mixin;
 
 import java.util.UUID;
 
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -23,9 +25,11 @@ import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
 public class BarrelEntityMixin implements IShopBarrelEntity {
     private static final String SHOP_OWNER_NBT_TAG = "shop_owner";
     private static final String TYPE_NBT_TAG = "shop_barrely_type";
+    private static final String SHOP_NAME_NBT_TAG = "shop_name";
     public UUID owner;
     public ShopMerchant shopMerchant;
     public BarrelType type = BarrelType.NONE;
+    public String shopName;
 
     @Override
     public BarrelType getType() {
@@ -36,6 +40,9 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
     public UUID getOwner() {
         return owner;
     }
+
+    @Override
+    public String getShopName() { return shopName; }
 
     @Override
     public BarrelBlockEntity getOutputBarrel() {
@@ -93,31 +100,52 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
         return null;
     }
 
+    /**
+     * "Activate" will attempt to create
+     * a shop if all requirements are
+     * met.
+     * Requirements:
+     * 1. The shop doesn't already have an owner
+     * 2. The shop is valid and has all its parts intact
+     */
     @Override
-    public void activate(PlayerEntity player, BarrelType signType) {
+    public void activate(PlayerEntity player, BarrelType signType, String shopName) {
+
+        // TODO
+        /* Not fully implemented yet
+        if (!completeSetup(signType)) {
+            Utils.sendMessage(player, (LiteralText) new LiteralText("Incomplete setup, shop must be connected to a stock and an output").formatted(Formatting.RED));
+            return;
+        }*/
+
         if (owner != null) {
             if (owner.equals(player.getUuid())) {
                 playerTroubleshoot(player);
             } else {
-                Utils.sendMessage(player, "Someone already owns this");
+                Utils.sendMessage(player, (LiteralText) new LiteralText("Someone already owns this").formatted(Formatting.RED));
             }
         } else {
-            create(player, signType);
+            create(player, signType, shopName);
         }
     }
 
-    public void create(PlayerEntity player, BarrelType newType) {
+    /**
+     * "Create" will instantiate a shop
+     * and set its corresponding fields
+     */
+    public void create(PlayerEntity player, BarrelType newType, String shopName) {
         owner = player.getUuid();
         type = newType;
+        this.shopName = shopName;
 
         BarrelBlockEntity entity = (BarrelBlockEntity) (Object) this;
         entity.markDirty();
 
-        Utils.sendMessage(player, newType.typeName() + " barrel created");
+        Utils.sendMessage(player, (LiteralText) new LiteralText(newType.typeName() + " barrel created").formatted(Formatting.GREEN));
     }
 
     public void playerTroubleshoot(PlayerEntity player) {
-        Utils.sendMessage(player, type.typeName() + " barrel owned by you");
+        Utils.sendMessage(player, (LiteralText) new LiteralText(type.typeName() + " barrel already owned by you").formatted(Formatting.RED));
         if(type == BarrelType.SHOP) {
             BarrelBlockEntity output = getOutputBarrel();
             if (output != null) {
@@ -152,6 +180,27 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
         }
     }
 
+
+    /**
+     * "completeSetup" will prevent a shop from being created
+     * unless all parts of the shop are there. Aka this will
+     * require both a stock and an output to be attached before
+     * the shop is seen as valid
+     */
+    public boolean completeSetup(BarrelType signType) {
+        return (
+            (signType == BarrelType.SHOP &&
+                getNeighbourByType(BarrelType.OUTPUT) != null &&
+                getNeighbourByType(BarrelType.STOCK) != null) ||
+            (signType == BarrelType.OUTPUT &&
+                getNeighbourByType(BarrelType.SHOP) != null &&
+                getNeighbourByType(BarrelType.STOCK) != null) ||
+            (signType == BarrelType.STOCK &&
+                getNeighbourByType(BarrelType.SHOP) != null &&
+                getNeighbourByType(BarrelType.OUTPUT) != null)
+        );
+    }
+
     @Inject(at = @At("RETURN"), method = "writeNbt")
     public void onNbtWrite(NbtCompound tag, CallbackInfo callback) {
         if (owner != null) {
@@ -160,6 +209,8 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
         if (type != BarrelType.NONE) {
             tag.putInt(TYPE_NBT_TAG, type.toInt());
         }
+        if (shopName != null)
+            tag.putString(SHOP_NAME_NBT_TAG, shopName);
     }
 
     @Inject(at = @At("RETURN"), method = "readNbt")
@@ -170,6 +221,7 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
         if (tag.contains(TYPE_NBT_TAG)) {
             type = BarrelType.fromInt(tag.getInt(TYPE_NBT_TAG));
         }
-
+        if (tag.contains(SHOP_NAME_NBT_TAG))
+            shopName = tag.getString(SHOP_NAME_NBT_TAG);
     }
 }

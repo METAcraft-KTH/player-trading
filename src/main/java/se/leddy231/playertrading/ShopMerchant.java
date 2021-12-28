@@ -19,11 +19,11 @@ public class ShopMerchant implements Merchant {
     @Nullable
     public PlayerEntity currentCustomer;
     public IShopBarrelEntity shopEntity;
-    // Trades that expire/are used up needs to be kept inte the trades list until
+    // Trades that expire/are used up needs to be kept in the trades list until
     // the screen is closed
     // Otherwise, the client game crashes
     public ShopTradeOffer[] oldTrades;
-    // Ignore inventory refresh while moving thins around in the inventory
+    // Ignore inventory refresh while moving things around in the inventory
     private boolean ignoreRefresh = false;
 
     public ShopMerchant(IShopBarrelEntity shopEntity) {
@@ -41,8 +41,8 @@ public class ShopMerchant implements Merchant {
     }
 
     @Override
-    public void setCurrentCustomer(@Nullable PlayerEntity var1) {
-        currentCustomer = var1;
+    public void setCurrentCustomer(@Nullable PlayerEntity player) {
+        currentCustomer = player;
     }
 
     @Nullable
@@ -51,12 +51,12 @@ public class ShopMerchant implements Merchant {
         return currentCustomer;
     }
 
-    public void openShop(PlayerEntity player) {
+    public void openShop(PlayerEntity player, String shopName) {
         setCurrentCustomer(player);
-        sendOffers(player, new LiteralText(SHOP_TITLE), 0);
+        sendOffers(player, new LiteralText(shopName != null ? shopName : SHOP_TITLE), 0);
     }
 
-    // Optimization: cache this and only refresh on barrel inventory changes
+    // TODO Optimization: cache this and only refresh on barrel inventory changes
     public TradeOfferList getOffers() {
         TradeOfferList list = new TradeOfferList();
         Inventory outputBarrel = shopEntity.getOutputBarrel();
@@ -133,10 +133,12 @@ public class ShopMerchant implements Merchant {
         if (ignoreRefresh)
             return;
         PlayerTrading.LOGGER.info("refresh");
-        int syncid = currentCustomer.currentScreenHandler.syncId;
-        currentCustomer.sendTradeOffers(syncid, getOffers(), 0, 0, this.isLeveledMerchant(), this.canRefreshTrades());
-        MerchantScreenHandlerAccessor accessor = (MerchantScreenHandlerAccessor) currentCustomer.currentScreenHandler;
-        accessor.getMerchantInventory().updateOffers();
+        if (currentCustomer != null) {
+            int syncid = currentCustomer.currentScreenHandler.syncId;
+            currentCustomer.sendTradeOffers(syncid, getOffers(), 0, 0, this.isLeveledMerchant(), this.canRefreshTrades());
+            MerchantScreenHandlerAccessor accessor = (MerchantScreenHandlerAccessor) currentCustomer.currentScreenHandler;
+            accessor.getMerchantInventory().updateOffers();
+        }
     }
 
     public void trade(TradeOffer var1) {
