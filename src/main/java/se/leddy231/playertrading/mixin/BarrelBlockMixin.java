@@ -52,8 +52,11 @@ public class BarrelBlockMixin {
 			return;
 		}
 		IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) (Object) entity;
-		if (barrelEntity.getType() != BarrelType.NONE) {
+		if (barrelEntity.getType().isExpansionType()) {
 			barrelEntity.onInventoryChange();
+		}
+		if (barrelEntity.getType() == BarrelType.SHOP) {
+			((IShopBarrelEntity) barrelEntity).getShopMerchant().forceCloseShop();
 		}
 	}
 }

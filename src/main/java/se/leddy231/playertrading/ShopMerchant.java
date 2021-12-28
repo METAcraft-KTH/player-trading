@@ -56,6 +56,12 @@ public class ShopMerchant implements Merchant {
         sendOffers(player, new LiteralText(SHOP_TITLE), 0);
     }
 
+    public void forceCloseShop() {
+        if (currentCustomer != null) {
+            currentCustomer.currentScreenHandler.close(currentCustomer);
+        }
+    }
+
     // Optimization: cache this and only refresh on barrel inventory changes
     public TradeOfferList getOffers() {
         TradeOfferList list = new TradeOfferList();

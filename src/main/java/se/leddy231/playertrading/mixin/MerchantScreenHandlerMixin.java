@@ -26,7 +26,7 @@ public class MerchantScreenHandlerMixin {
 	private void onScreenClose(PlayerEntity player, CallbackInfo ci) {
         MerchantScreenHandlerAccessor accessor = (MerchantScreenHandlerAccessor) this;
         Merchant merchant = accessor.getMerchant();
-        if (accessor.getMerchant() instanceof ShopMerchant) {
+        if (merchant instanceof ShopMerchant) {
             ((ShopMerchant) merchant).onScreenClose();
         }
 	}
