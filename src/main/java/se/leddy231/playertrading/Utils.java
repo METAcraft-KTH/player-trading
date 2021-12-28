@@ -5,6 +5,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 
 public class Utils {
@@ -14,6 +15,13 @@ public class Utils {
 
     public static void sendMessage(PlayerEntity player, String text) {
         player.sendMessage(new LiteralText(text), false);
+    }
+
+    /**
+     * Send message method that supports formatting
+     */
+    public static void sendMessage(PlayerEntity player, LiteralText literalText) {
+        player.sendMessage(literalText, false);
     }
 
     public static boolean canStacksCombine(ItemStack first, ItemStack second) {

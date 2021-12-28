@@ -38,7 +38,7 @@ public class BarrelBlockMixin {
 			}
 			ci.setReturnValue(ActionResult.SUCCESS);
 			IShopBarrelEntity shop = (IShopBarrelEntity) barrelEntity;
-			shop.getShopMerchant().openShop(player);
+			shop.getShopMerchant().openShop(player, barrelEntity.getShopName());
 		}
 
 	}

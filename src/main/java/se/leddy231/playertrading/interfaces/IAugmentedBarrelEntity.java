@@ -11,7 +11,9 @@ public interface IAugmentedBarrelEntity {
 
     public abstract UUID getOwner();
 
-    public abstract void activate(PlayerEntity player, BarrelType signType);
+    public abstract String getShopName();
+
+    public abstract void activate(PlayerEntity player, BarrelType signType, String shopName);
 
     public abstract void onInventoryChange();
 }

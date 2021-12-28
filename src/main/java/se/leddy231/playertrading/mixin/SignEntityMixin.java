@@ -25,6 +25,10 @@ public class SignEntityMixin {
     public void createShop(ServerPlayerEntity player, final CallbackInfoReturnable<Boolean> callback) {
         SignBlockEntity signEntity = (SignBlockEntity) (Object) this;
         Text text = signEntity.getTextOnRow(0, false);
+
+        // Get shop name
+        Text shopName = signEntity.getTextOnRow(1, false);
+
         // Has shop tag on sign
         BarrelType type = BarrelType.fromSignTag(text.asString());
         if (type == BarrelType.NONE)
@@ -44,7 +48,8 @@ public class SignEntityMixin {
         // Sign is attached to a barrel
         if (!(barrelState.getBlock() instanceof BarrelBlock))
             return;
+
         IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) world.getBlockEntity(pos);
-        barrelEntity.activate(player, type);
+        barrelEntity.activate(player, type, shopName.asString());
     }
 }
