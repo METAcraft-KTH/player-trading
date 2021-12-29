@@ -13,7 +13,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import se.leddy231.playertrading.*;
 import se.leddy231.playertrading.interfaces.IAugmentedBarrelEntity;

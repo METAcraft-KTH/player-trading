@@ -56,6 +56,12 @@ public class ShopMerchant implements Merchant {
         sendOffers(player, new LiteralText(SHOP_TITLE), 0);
     }
 
+    public void forceCloseShop() {
+        if (currentCustomer != null) {
+            currentCustomer.currentScreenHandler.close(currentCustomer);
+        }
+    }
+
     // Optimization: cache this and only refresh on barrel inventory changes
     public TradeOfferList getOffers() {
         TradeOfferList list = new TradeOfferList();
@@ -132,7 +138,6 @@ public class ShopMerchant implements Merchant {
     public void refreshTrades() {
         if (ignoreRefresh)
             return;
-        PlayerTrading.LOGGER.info("refresh");
         int syncid = currentCustomer.currentScreenHandler.syncId;
         currentCustomer.sendTradeOffers(syncid, getOffers(), 0, 0, this.isLeveledMerchant(), this.canRefreshTrades());
         MerchantScreenHandlerAccessor accessor = (MerchantScreenHandlerAccessor) currentCustomer.currentScreenHandler;

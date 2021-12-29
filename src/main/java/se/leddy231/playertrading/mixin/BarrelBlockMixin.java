@@ -18,6 +18,7 @@ import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(BarrelBlock.class)
@@ -40,6 +41,22 @@ public class BarrelBlockMixin {
 			IShopBarrelEntity shop = (IShopBarrelEntity) barrelEntity;
 			shop.getShopMerchant().openShop(player);
 		}
+	}
 
+	//Update inventory on block break
+	@Inject(at = @At("HEAD"), method = "onStateReplaced")
+	private void onUse(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved,
+			CallbackInfo ci) {
+		BlockEntity entity = world.getBlockEntity(pos);
+		if (!(entity instanceof BarrelBlockEntity)) {
+			return;
+		}
+		IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) (Object) entity;
+		if (barrelEntity.getType().isExpansionType()) {
+			barrelEntity.onInventoryChange();
+		}
+		if (barrelEntity.getType() == BarrelType.SHOP) {
+			((IShopBarrelEntity) barrelEntity).getShopMerchant().forceCloseShop();
+		}
 	}
 }
