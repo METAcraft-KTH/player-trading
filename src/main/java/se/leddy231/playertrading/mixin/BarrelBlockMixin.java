@@ -2,6 +2,7 @@ package se.leddy231.playertrading.mixin;
 
 import net.minecraft.block.BarrelBlock;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -33,20 +34,29 @@ public class BarrelBlockMixin {
 		}
 		IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) (Object) entity;
 
-		if (barrelEntity.getType() == BarrelType.SHOP) {
+		if (barrelEntity.getType() != BarrelType.NONE) {
+			IShopBarrelEntity shop = barrelEntity.findConnectedShop();
+			if (shop == null) {
+				return;
+			}
 			if (barrelEntity.getOwner().equals(player.getUuid()) && !player.isSneaking()) {
+				//Close the trade window if a customer is using the shop
+				shop.getShopMerchant().forceCloseShop();
 				return;
 			}
 			ci.setReturnValue(ActionResult.SUCCESS);
-			IShopBarrelEntity shop = (IShopBarrelEntity) barrelEntity;
 			shop.getShopMerchant().openShop(player);
 		}
 	}
 
-	//Update inventory on block break
+	// Update inventory on block break
 	@Inject(at = @At("HEAD"), method = "onStateReplaced")
 	private void onUse(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved,
 			CallbackInfo ci) {
+		if (state.isOf(newState.getBlock())) {
+			//Ignore state changes when for example chaning texture to show the barrel being open.
+			return;
+		}
 		BlockEntity entity = world.getBlockEntity(pos);
 		if (!(entity instanceof BarrelBlockEntity)) {
 			return;

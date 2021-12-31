@@ -12,4 +12,6 @@ public interface IShopBarrelEntity extends IAugmentedBarrelEntity {
     public abstract BarrelBlockEntity getStockBarrel();
 
     public abstract BarrelBlockEntity getShopBarrel();
+
+    public abstract boolean isAnyBarrelOpen();
 }

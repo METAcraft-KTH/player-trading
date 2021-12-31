@@ -14,4 +14,8 @@ public interface IAugmentedBarrelEntity {
     public abstract void activate(PlayerEntity player, BarrelType signType);
 
     public abstract void onInventoryChange();
+
+    public abstract IShopBarrelEntity findConnectedShop();
+
+    public abstract boolean isBarrelOpen();
 }
