@@ -2,7 +2,6 @@ package se.leddy231.playertrading.mixin;
 
 import net.minecraft.block.BarrelBlock;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
