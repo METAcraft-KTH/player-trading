@@ -5,12 +5,16 @@ import java.util.UUID;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.At;
 
 import net.minecraft.block.BarrelBlock;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -62,6 +66,18 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
         return null;
     }
 
+    @Override
+    public IShopBarrelEntity findConnectedShop() {
+        if (type == BarrelType.SHOP) {
+            return this;
+        }
+        IAugmentedBarrelEntity entity = getNeighbourByType(BarrelType.SHOP);
+        if (entity != null) {
+            return (IShopBarrelEntity) entity;
+        }
+        return null;
+    }
+
     private BarrelBlockEntity getEntity() {
         return (BarrelBlockEntity) (Object) this;
     }
@@ -86,10 +102,32 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
             if (!(world.getBlockState(newPos).getBlock() instanceof BarrelBlock))
                 continue;
             IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) world.getBlockEntity(newPos);
-            if (barrelEntity.getType() == type)
+            if (barrelEntity.getType() == type && barrelEntity.getOwner().equals(owner))
                 return barrelEntity;
         }
         return null;
+    }
+
+    @Override
+    public boolean isBarrelOpen() {
+        BarrelBlockEntity entity = getEntity();
+        World world = entity.getWorld();
+        BlockPos pos = entity.getPos();
+        BlockState state = world.getBlockState(pos);
+        return state.get(BarrelBlock.OPEN);
+    }
+
+    @Override
+    public boolean isAnyBarrelOpen() {
+        if (isBarrelOpen())
+            return true;
+        IAugmentedBarrelEntity output = getNeighbourByType(BarrelType.OUTPUT);
+        if (output != null && output.isBarrelOpen())
+            return true;
+        IAugmentedBarrelEntity stock = getNeighbourByType(BarrelType.STOCK);
+        if (stock != null && stock.isBarrelOpen())
+            return true;
+        return false;
     }
 
     @Override
@@ -117,7 +155,7 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
 
     public void playerTroubleshoot(PlayerEntity player) {
         Utils.sendMessage(player, type.typeName() + " barrel owned by you");
-        if(type == BarrelType.SHOP) {
+        if (type == BarrelType.SHOP) {
             BarrelBlockEntity output = getOutputBarrel();
             if (output != null) {
                 Utils.sendMessage(player, "Sees Output barrel at " + Utils.posToString(output.getPos()));
@@ -125,15 +163,24 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
             BarrelBlockEntity stock = getStockBarrel();
             if (stock != null) {
                 Utils.sendMessage(player, "Sees Stock barrel at " + Utils.posToString(stock.getPos()));
+                if (output == null) {
+                    Utils.sendMessage(player, "No Output barrel seen, Stock barrel does not function without one.");
+                }
             }
             getShopMerchant().checkTrades(player);
+        }
+        if (type.isExpansionType()) {
+            IShopBarrelEntity shop = findConnectedShop();
+            if (shop == null) {
+                Utils.sendMessage(player, "No shop connected");
+            }
         }
     }
 
     @Override
     public void onInventoryChange() {
         if (type.isExpansionType()) {
-            //Notify neightbours
+            // Notify neightbours
             BarrelBlockEntity entity = getEntity();
             World world = entity.getWorld();
             BlockPos pos = entity.getPos();
@@ -148,6 +195,13 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
         }
         if (type == BarrelType.SHOP && getShopMerchant().currentCustomer != null) {
             shopMerchant.refreshTrades();
+        }
+    }
+
+    @Inject(at = @At("HEAD"), method = "getContainerName", cancellable = true)
+    public void getContainerName(CallbackInfoReturnable<Text> callback) {
+        if (type != BarrelType.NONE) {
+            callback.setReturnValue(new LiteralText(type.typeName() + " Barrel"));
         }
     }
 

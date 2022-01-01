@@ -16,6 +16,10 @@ public class Utils {
         player.sendMessage(new LiteralText(text), false);
     }
 
+    public static void sendToast(PlayerEntity player, String text) {
+        player.sendMessage(new LiteralText(text), true);
+    }
+
     public static boolean canStacksCombine(ItemStack first, ItemStack second) {
         if (first.isEmpty() || second.isEmpty()) {
             return true;

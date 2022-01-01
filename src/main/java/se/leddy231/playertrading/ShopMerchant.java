@@ -52,6 +52,14 @@ public class ShopMerchant implements Merchant {
     }
 
     public void openShop(PlayerEntity player) {
+        if (currentCustomer != null) {
+            Utils.sendToast(player, "This shop is currently in use");
+            return;
+        }
+        if (shopEntity.isAnyBarrelOpen()) {
+            Utils.sendToast(player, "This shop is currently being edited by its owner");
+            return;
+        }
         setCurrentCustomer(player);
         sendOffers(player, new LiteralText(SHOP_TITLE), 0);
     }
