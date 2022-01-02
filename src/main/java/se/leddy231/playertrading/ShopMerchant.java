@@ -109,14 +109,14 @@ public class ShopMerchant implements Merchant {
         boolean firstFitsInOutputBarrel = Utils.canPutInInventory(first, outputBarrel);
         boolean secondFitsInOutputBarrel = Utils.canPutInInventory(second, outputBarrel);
 
-        if(!firstCanMerge && !firstFitsInOutputBarrel) {
+        if (!firstCanMerge && !firstFitsInOutputBarrel) {
             String error = "the first payment item(s) does not stack with itself";
             if (outputBarrel != null) {
                 error += ", and does not fit in Output barrel";
             }
             return ShopTradeOffer.invalid(first, second, result, index, error);
         }
-        if(!secondCanMerge && !secondFitsInOutputBarrel) {
+        if (!secondCanMerge && !secondFitsInOutputBarrel) {
             String error = "the second payment item(s) does not stack with itself";
             if (outputBarrel != null) {
                 error += ", and does not fit in Output barrel";
@@ -160,6 +160,7 @@ public class ShopMerchant implements Merchant {
         int resultSlot = firstSlot + 2;
         Inventory shopBarrel = shopEntity.getShopBarrel();
         Inventory outputBarrel = shopEntity.getOutputBarrel();
+        Inventory stockBarrel = shopEntity.getStockBarrel();
 
         ItemStack first = offer.getFirst().copy();
         ItemStack second = offer.getSecond().copy();
@@ -176,20 +177,17 @@ public class ShopMerchant implements Merchant {
         if (!resultValid) {
             PlayerTrading.LOGGER.error("Result items of a trade mismatched!");
         }
-        boolean pullResultFromStock = true;
-        if (!Utils.tryPutInInventory(first, outputBarrel)) {
+        boolean firstWentToOutput = Utils.tryPutInInventory(first, outputBarrel);
+        boolean secondWentToOutput = Utils.tryPutInInventory(second, outputBarrel);
+        if (!firstWentToOutput) {
             shopBarrel.setStack(firstSlot, Utils.combine(first, first));
-            pullResultFromStock = false;
         }
-        if (!Utils.tryPutInInventory(second, outputBarrel)) {
+        if (!secondWentToOutput) {
             shopBarrel.setStack(secondSlot, Utils.combine(second, second));
-            pullResultFromStock = false;
         }
-        boolean resultRemoved = false;
-        if (pullResultFromStock) {
-           resultRemoved = Utils.tryPullFromInventory(result, shopEntity.getStockBarrel());
-        }
-        if(!resultRemoved) {
+        boolean resultTakenFromStock = firstWentToOutput && secondWentToOutput
+                && Utils.tryPullFromInventory(result, stockBarrel);
+        if (!resultTakenFromStock) {
             shopBarrel.setStack(resultSlot, ItemStack.EMPTY);
         }
         offer.use();

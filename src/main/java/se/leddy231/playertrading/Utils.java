@@ -1,5 +1,7 @@
 package se.leddy231.playertrading;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
@@ -25,9 +27,11 @@ public class Utils {
             return true;
         }
         Item item = first.getItem();
-        return second.isOf(item) && ItemStack.areNbtEqual(first, second) && first.getCount() + second.getCount() <= item.getMaxCount();
+        return second.isOf(item) && ItemStack.areNbtEqual(first, second)
+                && first.getCount() + second.getCount() <= item.getMaxCount();
     }
-    //  /!\ Assumes canStacksCombine is true
+
+    // /!\ Assumes canStacksCombine is true
     public static ItemStack combine(ItemStack first, ItemStack second) {
         if (first.isEmpty()) {
             return second.copy();
@@ -87,18 +91,57 @@ public class Utils {
         return false;
     }
 
-    public static boolean tryPullFromInventory(ItemStack stack, Inventory inventory) {
+    public static boolean canPullFromInventory(ItemStack stack, Inventory inventory) {
         if (stack.isEmpty())
             return true;
         if (inventory == null)
             return false;
+
+        int count = stack.getCount();
         for (int i = 0; i < inventory.size(); i++) {
             ItemStack current = inventory.getStack(i);
-            if (Utils.canStacksSubtract(current, stack)) {
-                current = Utils.subtract(current, stack);
-                inventory.setStack(i, current);
+            if (current.isOf(stack.getItem())) {
+                count -= current.getCount();
+            }
+            if (count <= 0) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    public static boolean tryPullFromInventory(ItemStack stack, Inventory inventory) {
+        List<Integer> slotsToClear = new ArrayList<>();
+        if (stack.isEmpty())
+            return true;
+        if (inventory == null)
+            return false;
+
+        int amountToPull = stack.getCount();
+        for (int i = 0; i < inventory.size(); i++) {
+            ItemStack current = inventory.getStack(i);
+            if (current.isOf(stack.getItem())) {
+
+                int currentAmount = current.getCount();
+                if (currentAmount <= amountToPull) {
+                    amountToPull -= currentAmount;
+                    slotsToClear.add(i);
+                    if (amountToPull == 0)
+                        break;
+                } else {
+                    currentAmount -= amountToPull;
+                    inventory.setStack(i, new ItemStack(stack.getItem(), currentAmount));
+                    amountToPull = 0;
+                    break;
+                }
+
+            }
+        }
+        if (amountToPull == 0) {
+            for (Integer i : slotsToClear) {
+                inventory.setStack(i, ItemStack.EMPTY);
+            }
+            return true;
         }
         return false;
     }
