@@ -1,6 +1,6 @@
-# Player trading by Leddy231, for Metacraft
+# Player trading, for Metacraft
 Set up player shops/trading stations with just barrels and signs!
-Server side only, 1.18 with Fabric loader.
+Server side only, 1.18.1 with Fabric loader.
 
 ## Getting started
 All you need to set up a trading station is a Barrel and a Sign.  
