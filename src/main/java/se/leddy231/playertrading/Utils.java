@@ -21,7 +21,7 @@ public class Utils {
     public static void sendToast(PlayerEntity player, String text) {
         player.sendMessage(new LiteralText(text), true);
     }
-
+    
     public static boolean canStacksCombine(ItemStack first, ItemStack second) {
         if (first.isEmpty() || second.isEmpty()) {
             return true;
@@ -100,7 +100,7 @@ public class Utils {
         int count = stack.getCount();
         for (int i = 0; i < inventory.size(); i++) {
             ItemStack current = inventory.getStack(i);
-            if (current.isOf(stack.getItem())) {
+            if (current.isOf(stack.getItem()) && ItemStack.areNbtEqual(current, stack)) {
                 count -= current.getCount();
             }
             if (count <= 0) {
@@ -120,7 +120,7 @@ public class Utils {
         int amountToPull = stack.getCount();
         for (int i = 0; i < inventory.size(); i++) {
             ItemStack current = inventory.getStack(i);
-            if (current.isOf(stack.getItem())) {
+            if (current.isOf(stack.getItem()) && ItemStack.areNbtEqual(current, stack)) {
 
                 int currentAmount = current.getCount();
                 if (currentAmount <= amountToPull) {
