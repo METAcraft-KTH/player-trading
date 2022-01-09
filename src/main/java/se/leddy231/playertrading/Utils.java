@@ -129,8 +129,7 @@ public class Utils {
                     if (amountToPull == 0)
                         break;
                 } else {
-                    currentAmount -= amountToPull;
-                    inventory.setStack(i, new ItemStack(stack.getItem(), currentAmount));
+                    current.decrement(amountToPull);
                     amountToPull = 0;
                     break;
                 }
