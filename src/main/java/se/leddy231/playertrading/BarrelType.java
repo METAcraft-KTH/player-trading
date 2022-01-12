@@ -4,7 +4,11 @@ public enum BarrelType {
     NONE(0, "None", null),
     SHOP(1, "Shop", "{shop}"),
     OUTPUT(2, "Output", "{output}"),
-    STOCK(3, "Stock", "{stock}");
+    STOCK(3, "Stock", "{stock}"),
+    PERMANENT(4, "Permanent shop", "{permanent shop}"),
+    ADMIN(5, "Admin shop", "{admin shop}"),
+    STORAGE(6, "Storage", "{storage}"),
+    SINGLEUSE(7, "Single use", "{single use}");
 
     private int id;
     private String typeName;
@@ -24,8 +28,16 @@ public enum BarrelType {
         return typeName;
     }
 
+    public boolean isShopType() {
+        return this == SHOP || this == PERMANENT || this == ADMIN || this == SINGLEUSE;
+    }
+
     public boolean isExpansionType() {
-        return this != NONE && this != SHOP;
+        return this == OUTPUT || this == STOCK || this == STORAGE;
+    }
+
+    public boolean isAdminType() {
+        return this == ADMIN  || this == SINGLEUSE;
     }
 
     public static BarrelType fromInt(int id) {

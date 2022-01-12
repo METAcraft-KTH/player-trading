@@ -2,6 +2,7 @@ package se.leddy231.playertrading.interfaces;
 
 import java.util.UUID;
 
+import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import se.leddy231.playertrading.BarrelType;
 
@@ -18,4 +19,6 @@ public interface IAugmentedBarrelEntity {
     public abstract IShopBarrelEntity findConnectedShop();
 
     public abstract boolean isBarrelOpen();
+
+    public abstract BarrelBlockEntity getEntity();
 }

@@ -50,6 +50,36 @@ The following flowcharts shows the decision process
 
 ![Flowchart](github/pictures/flowchart.png)
 
+## Extension barrel: Storage
+Sign tag: "{storage}"  
+A storage barrel acts like a stock barrel and a output barrel at the same time!
+Perfect for trading items forwards and backwards, for bank systems or for profit.
+The storage barrel is checked to have both a valid place to put the payment, and have stock items. If it gets too full the trade might not work. Be sure to keep it balanced.
+
+## Alternative shop: Permanent shop
+Sign tag: "{permanent shop}"  
+Tired of your trades dissapearing because someone took the last stock from the shop barrel? This one is for you.
+The Permanent shop barrel refuses to perform the last trade that would break the trade setup.
+
+This shop type requires a output + stock or a storage barrel to be usefull.
+
+## Alternative shop: Admin shop
+Sign tag: "{admin shop}"  
+Requires OP permissions to use  
+This shop type has a magical infinite supply of items. It tries to put payments in a output barrel if connected, but otherwise it is perfectly happy to void them.
+Usefull for admin controlled shops.
+
+## Alternative shop: Single use admin shop
+Sign tag: "{single use}"  
+Requires OP permissions to use  
+Similar to a Admin shop, but clears the trade after a single use, and does not keep any payments.   
+If the last trade is used up, the barrel self destructs! (non explosive).
+Usefull for setting up single use trades in many locations, for example for selling land plots.
+
+## Adming debug stick
+Users with OP permissions can use the command `/shop debug` to get hold of a debug stick.  
+With a debug stick in hand a OP user can look into any shop and access troubleshooting information on shop signs, just as the owner would.
+
 ## Pictures
 
 ### A simple trade station for some armor and iron  

@@ -7,11 +7,16 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 
 public class Utils {
     public static String posToString(BlockPos pos) {
         return "(" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ")";
+    }
+
+    public static void sendMessage(PlayerEntity player, Text text) {
+        player.sendMessage(text, false);
     }
 
     public static void sendMessage(PlayerEntity player, String text) {

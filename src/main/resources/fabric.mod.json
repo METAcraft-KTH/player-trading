@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "leddy231-playertrading",
-  "version": "1.0.2",
+  "version": "1.1.0",
 
   "name": "Player Trading",
   "description": "Allows player-to-player trading posts / shops from just barrels and a sign!",

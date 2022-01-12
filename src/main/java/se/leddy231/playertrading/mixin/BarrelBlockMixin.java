@@ -5,12 +5,15 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import se.leddy231.playertrading.BarrelType;
+import se.leddy231.playertrading.DebugStickCommand;
 import se.leddy231.playertrading.PlayerTrading;
 import se.leddy231.playertrading.interfaces.IAugmentedBarrelEntity;
 import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
@@ -38,11 +41,15 @@ public class BarrelBlockMixin {
 			if (shop == null) {
 				return;
 			}
-			if (barrelEntity.getOwner().equals(player.getUuid()) && !player.isSneaking()) {
+
+			boolean ownerBypass = barrelEntity.getOwner().equals(player.getUuid()) && !player.isSneaking();
+			boolean opDebugBypass = player.hasPermissionLevel(4) && ItemStack.areNbtEqual(player.getMainHandStack(), DebugStickCommand.STICK);
+			if (ownerBypass || opDebugBypass) {
 				//Close the trade window if a customer is using the shop
 				shop.getShopMerchant().forceCloseShop();
 				return;
 			}
+
 			ci.setReturnValue(ActionResult.SUCCESS);
 			shop.getShopMerchant().openShop(player);
 		}
@@ -64,7 +71,7 @@ public class BarrelBlockMixin {
 		if (barrelEntity.getType().isExpansionType()) {
 			barrelEntity.onInventoryChange();
 		}
-		if (barrelEntity.getType() == BarrelType.SHOP) {
+		if (barrelEntity.getType().isShopType()) {
 			((IShopBarrelEntity) barrelEntity).getShopMerchant().forceCloseShop();
 		}
 	}

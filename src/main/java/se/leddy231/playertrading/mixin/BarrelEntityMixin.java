@@ -12,6 +12,7 @@ import net.minecraft.block.BarrelBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -41,50 +42,60 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
     }
 
     @Override
-    public BarrelBlockEntity getOutputBarrel() {
+    public IAugmentedBarrelEntity getOutputBarrel() {
         IAugmentedBarrelEntity entity = getNeighbourByType(BarrelType.OUTPUT);
+        if (entity == null) {
+            entity = getNeighbourByType(BarrelType.STORAGE);
+        }
         if (entity != null) {
-            return (BarrelBlockEntity) entity;
+            return entity;
         }
         return null;
     }
 
     @Override
-    public BarrelBlockEntity getStockBarrel() {
+    public IAugmentedBarrelEntity getStockBarrel() {
         IAugmentedBarrelEntity entity = getNeighbourByType(BarrelType.STOCK);
+        if (entity == null) {
+            entity = getNeighbourByType(BarrelType.STORAGE);
+        }
         if (entity != null) {
-            return (BarrelBlockEntity) entity;
+            return entity;
         }
         return null;
     }
 
     @Override
-    public BarrelBlockEntity getShopBarrel() {
-        if (type == BarrelType.SHOP) {
-            return getEntity();
+    public IShopBarrelEntity getShopBarrel() {
+        if (type.isShopType()) {
+            return this;
         }
         return null;
     }
 
     @Override
     public IShopBarrelEntity findConnectedShop() {
-        if (type == BarrelType.SHOP) {
+        if (type.isShopType()) {
             return this;
         }
         IAugmentedBarrelEntity entity = getNeighbourByType(BarrelType.SHOP);
-        if (entity != null) {
-            return (IShopBarrelEntity) entity;
+        if (entity == null) {
+            entity = getNeighbourByType(BarrelType.PERMANENT);
         }
-        return null;
+        if (entity == null) {
+            return null;
+        }
+        return (IShopBarrelEntity) entity;
     }
 
-    private BarrelBlockEntity getEntity() {
+    @Override
+    public BarrelBlockEntity getEntity() {
         return (BarrelBlockEntity) (Object) this;
     }
 
     @Override
     public ShopMerchant getShopMerchant() {
-        if (type != BarrelType.SHOP) {
+        if (!type.isShopType()) {
             return null;
         }
         if (shopMerchant == null) {
@@ -133,12 +144,17 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
     @Override
     public void activate(PlayerEntity player, BarrelType signType) {
         if (owner != null) {
-            if (owner.equals(player.getUuid())) {
+            boolean opDebugBypass = player.hasPermissionLevel(4) && ItemStack.areNbtEqual(player.getMainHandStack(), DebugStickCommand.STICK);
+            if (owner.equals(player.getUuid())|| opDebugBypass) {
                 playerTroubleshoot(player);
             } else {
                 Utils.sendMessage(player, "Someone already owns this");
             }
         } else {
+            if(signType.isAdminType() && !player.hasPermissionLevel(4)) {
+                Utils.sendMessage(player, "You do not have permission for this");
+                return;
+            }
             create(player, signType);
         }
     }
@@ -154,15 +170,36 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
     }
 
     public void playerTroubleshoot(PlayerEntity player) {
-        Utils.sendMessage(player, type.typeName() + " barrel owned by you");
-        if (type == BarrelType.SHOP) {
-            BarrelBlockEntity output = getOutputBarrel();
-            if (output != null) {
-                Utils.sendMessage(player, "Sees Output barrel at " + Utils.posToString(output.getPos()));
+        if (owner.equals(player.getUuid())) {
+            Utils.sendMessage(player, type.typeName() + " barrel owned by you");
+        } else {
+            PlayerEntity ownerEntity = player.getServer().getPlayerManager().getPlayer(owner);
+            if (ownerEntity != null) {
+
+                Utils.sendMessage(player, new LiteralText(type.typeName() + " barrel owned by ").append(ownerEntity.getDisplayName()));
+            } else {
+                Utils.sendMessage(player, type.typeName() + " barrel owned by offline player " + owner);
             }
-            BarrelBlockEntity stock = getStockBarrel();
-            if (stock != null) {
-                Utils.sendMessage(player, "Sees Stock barrel at " + Utils.posToString(stock.getPos()));
+        }
+
+        if (type.isShopType()) {
+            IAugmentedBarrelEntity output = getOutputBarrel();
+            IAugmentedBarrelEntity stock = getStockBarrel();
+
+            if (output == null) {
+                if(type == BarrelType.PERMANENT) {
+                    Utils.sendMessage(player, "No Output barrel seen, a Permanent shop does not function without one.");
+                }
+            } else {
+                Utils.sendMessage(player, "Sees " + output.getType().typeName() + " barrel as output at " + Utils.posToString(output.getEntity().getPos()));
+            }
+
+            if (stock == null) {
+                if(type == BarrelType.PERMANENT) {
+                    Utils.sendMessage(player, "No Stock barrel seen, a Permanent shop does not function without one.");
+                }
+            } else {
+                Utils.sendMessage(player, "Sees " + stock.getType().typeName() + " barrel as stock at " + Utils.posToString(stock.getEntity().getPos()));
                 if (output == null) {
                     Utils.sendMessage(player, "No Output barrel seen, Stock barrel does not function without one.");
                 }
@@ -189,11 +226,11 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
                 if (!(world.getBlockState(newPos).getBlock() instanceof BarrelBlock))
                     continue;
                 IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) world.getBlockEntity(newPos);
-                if (barrelEntity.getType() == BarrelType.SHOP)
+                if (barrelEntity.getType().isShopType())
                     barrelEntity.onInventoryChange();
             }
         }
-        if (type == BarrelType.SHOP && getShopMerchant().currentCustomer != null) {
+        if (type.isShopType() && getShopMerchant().currentCustomer != null) {
             shopMerchant.refreshTrades();
         }
     }
