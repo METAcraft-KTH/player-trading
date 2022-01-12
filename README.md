@@ -76,7 +76,7 @@ Similar to a Admin shop, but clears the trade after a single use, and does not k
 If the last trade is used up, the barrel self destructs! (non explosive).
 Usefull for setting up single use trades in many locations, for example for selling land plots.
 
-## Adming debug stick
+## Admin debug stick
 Users with OP permissions can use the command `/shop debug` to get hold of a debug stick.  
 With a debug stick in hand a OP user can look into any shop and access troubleshooting information on shop signs, just as the owner would.
 
