@@ -6,7 +6,7 @@ import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.item.Items;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -15,6 +15,7 @@ import net.minecraft.world.World;
 import se.leddy231.playertrading.BarrelType;
 import se.leddy231.playertrading.DebugStickCommand;
 import se.leddy231.playertrading.PlayerTrading;
+import se.leddy231.playertrading.ShopKey;
 import se.leddy231.playertrading.interfaces.IAugmentedBarrelEntity;
 import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
 
@@ -37,14 +38,24 @@ public class BarrelBlockMixin {
 		IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) (Object) entity;
 
 		if (barrelEntity.getType() != BarrelType.NONE) {
+			boolean isOwner = barrelEntity.getOwner().equals(player.getUuid());
+			boolean makeKey = isOwner && player.getMainHandStack().isOf(Items.GOLD_INGOT);
+
+			if (makeKey) {
+				ShopKey.makeIntoKeyForPlayer(player.getMainHandStack(), player);
+				ci.setReturnValue(ActionResult.SUCCESS);
+				return;
+			}
+
 			IShopBarrelEntity shop = barrelEntity.findConnectedShop();
 			if (shop == null) {
 				return;
 			}
 
-			boolean ownerBypass = barrelEntity.getOwner().equals(player.getUuid()) && !player.isSneaking();
+			boolean ownerBypass = isOwner && !player.isSneaking();
+			boolean keyBypass = ShopKey.isKeyForUUID(player.getMainHandStack(), barrelEntity.getOwner());
 			boolean opDebugBypass = player.hasPermissionLevel(4) && ItemStack.areNbtEqual(player.getMainHandStack(), DebugStickCommand.STICK);
-			if (ownerBypass || opDebugBypass) {
+			if (ownerBypass || keyBypass || opDebugBypass) {
 				//Close the trade window if a customer is using the shop
 				shop.getShopMerchant().forceCloseShop();
 				return;
