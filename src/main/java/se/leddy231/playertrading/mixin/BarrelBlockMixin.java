@@ -38,11 +38,12 @@ public class BarrelBlockMixin {
 		IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) (Object) entity;
 
 		if (barrelEntity.getType() != BarrelType.NONE) {
+			ItemStack usedItem = player.getMainHandStack();
 			boolean isOwner = barrelEntity.getOwner().equals(player.getUuid());
-			boolean makeKey = isOwner && player.getMainHandStack().isOf(Items.GOLD_INGOT);
+			boolean makeKey = isOwner && usedItem.isOf(Items.GOLD_INGOT) && !ShopKey.isKey(usedItem);
 
 			if (makeKey) {
-				ShopKey.makeIntoKeyForPlayer(player.getMainHandStack(), player);
+				ShopKey.makeIntoKeyForPlayer(usedItem, player);
 				ci.setReturnValue(ActionResult.SUCCESS);
 				return;
 			}
@@ -53,8 +54,8 @@ public class BarrelBlockMixin {
 			}
 
 			boolean ownerBypass = isOwner && !player.isSneaking();
-			boolean keyBypass = ShopKey.isKeyForUUID(player.getMainHandStack(), barrelEntity.getOwner());
-			boolean opDebugBypass = player.hasPermissionLevel(4) && ItemStack.areNbtEqual(player.getMainHandStack(), DebugStickCommand.STICK);
+			boolean keyBypass = ShopKey.isKeyForUUID(usedItem, barrelEntity.getOwner());
+			boolean opDebugBypass = player.hasPermissionLevel(4) && ItemStack.areNbtEqual(usedItem, DebugStickCommand.STICK);
 			if (ownerBypass || keyBypass || opDebugBypass) {
 				//Close the trade window if a customer is using the shop
 				shop.getShopMerchant().forceCloseShop();

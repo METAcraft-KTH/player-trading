@@ -23,6 +23,10 @@ public class ShopKey {
         stack.setCustomName(new LiteralText(name + "'s Shop key"));
     }
 
+    public static boolean isKey(ItemStack stack) {
+        return stack.isOf(Items.GOLD_INGOT) && stack.getOrCreateNbt().contains(KEY_TAG);
+    }
+
     public static boolean isKeyForUUID(ItemStack stack, UUID uuid) {
         String key_uuid  = stack.getOrCreateNbt().getString(KEY_TAG);
         return stack.isOf(Items.GOLD_INGOT) && key_uuid.equals(uuid.toString());
