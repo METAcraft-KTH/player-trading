@@ -24,11 +24,19 @@ public class ShopKey {
     }
 
     public static boolean isKey(ItemStack stack) {
-        return stack.isOf(Items.GOLD_INGOT) && stack.getOrCreateNbt().contains(KEY_TAG);
+        NbtCompound nbt = stack.getNbt();
+        if (nbt == null) {
+            return false;
+        }
+        return stack.isOf(Items.GOLD_INGOT) && nbt.contains(KEY_TAG);
     }
 
     public static boolean isKeyForUUID(ItemStack stack, UUID uuid) {
-        String key_uuid  = stack.getOrCreateNbt().getString(KEY_TAG);
+        NbtCompound nbt = stack.getNbt();
+        if (nbt == null) {
+            return false;
+        }
+        String key_uuid  = nbt.getString(KEY_TAG);
         return stack.isOf(Items.GOLD_INGOT) && key_uuid.equals(uuid.toString());
     }
 }
