@@ -38,4 +38,8 @@ public class ShopTradeOffer extends TradeOffer{
     public ShopTradeOffer asUsed() {
         return ShopTradeOffer.invalid(getFirst(), getSecond(), getResult(), shopBarrelInventoryIndex, "this trade is old (someone has the trade screen still open)");
     }
+
+    public String toString() {
+        return getFirst().toString() + " " + getSecond().toString() + " " + getSellItem().toString();
+    }
 }

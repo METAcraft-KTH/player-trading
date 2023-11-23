@@ -230,7 +230,7 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
                     barrelEntity.onInventoryChange();
             }
         }
-        if (type.isShopType() && getShopMerchant().currentCustomer != null) {
+        if (type.isShopType()) {
             shopMerchant.refreshTrades();
         }
     }
@@ -260,6 +260,5 @@ public class BarrelEntityMixin implements IShopBarrelEntity {
         if (tag.contains(TYPE_NBT_TAG)) {
             type = BarrelType.fromInt(tag.getInt(TYPE_NBT_TAG));
         }
-
     }
 }

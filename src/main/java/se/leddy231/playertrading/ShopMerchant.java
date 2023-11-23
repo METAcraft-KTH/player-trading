@@ -1,5 +1,7 @@
 package se.leddy231.playertrading;
 
+import java.util.*;
+
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.entity.BarrelBlockEntity;
@@ -16,6 +18,8 @@ import net.minecraft.village.TradeOfferList;
 import se.leddy231.playertrading.interfaces.IAugmentedBarrelEntity;
 import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
 import se.leddy231.playertrading.mixin.MerchantScreenHandlerAccessor;
+import se.leddy231.playertrading.stats.ShopStat;
+import se.leddy231.playertrading.stats.ShopStatManager;
 
 public class ShopMerchant implements Merchant {
     private static final String SHOP_TITLE = "Barrel shop";
@@ -28,6 +32,7 @@ public class ShopMerchant implements Merchant {
     public ShopTradeOffer[] oldTrades;
     // Ignore inventory refresh while moving thins around in the inventory
     private boolean ignoreRefresh = false;
+    public TradeOfferList cachedOffers;
 
     public ShopMerchant(IShopBarrelEntity shopEntity) {
         super();
@@ -211,10 +216,17 @@ public class ShopMerchant implements Merchant {
     public void refreshTrades() {
         if (ignoreRefresh)
             return;
-        int syncid = currentCustomer.currentScreenHandler.syncId;
-        currentCustomer.sendTradeOffers(syncid, getOffers(), 0, 0, this.isLeveledMerchant(), this.canRefreshTrades());
-        MerchantScreenHandlerAccessor accessor = (MerchantScreenHandlerAccessor) currentCustomer.currentScreenHandler;
-        accessor.getMerchantInventory().updateOffers();
+        cachedOffers = getOffers();
+        if (currentCustomer != null ){
+            int syncid = currentCustomer.currentScreenHandler.syncId;
+            currentCustomer.sendTradeOffers(syncid, cachedOffers, 0, 0, this.isLeveledMerchant(), this.canRefreshTrades());
+            MerchantScreenHandlerAccessor accessor = (MerchantScreenHandlerAccessor) currentCustomer.currentScreenHandler;
+            accessor.getMerchantInventory().updateOffers();
+        }
+        PlayerTrading.LOGGER.info("test");
+        BlockPos pos = shopEntity.getEntity().getPos();
+        ShopStat stat = new ShopStat(pos, shopEntity.getOwner(), cachedOffers);
+        ShopStatManager.getInstance().addStat(stat);
     }
 
     public void trade(TradeOffer var1) {

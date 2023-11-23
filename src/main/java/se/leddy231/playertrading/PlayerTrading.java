@@ -3,6 +3,7 @@ package se.leddy231.playertrading;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
+import se.leddy231.playertrading.stats.ShopStatManager;
 
 import com.mojang.brigadier.CommandDispatcher;
 
@@ -15,8 +16,16 @@ public class PlayerTrading implements ModInitializer {
 
 	public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, Boolean dedicated) {
 		dispatcher.register(literal("shop")
-				.then(literal("debug").requires(source -> source.hasPermissionLevel(4))
-						.executes(context -> DebugStickCommand.run(context)))
+				.then(
+					literal("debug")
+					.requires(source -> source.hasPermissionLevel(4))
+					.executes(context -> DebugStickCommand.run(context))
+				)
+				.then(
+					literal("stats")
+					.requires(source -> source.hasPermissionLevel(4))
+					.executes(context -> ShopStatManager.getInstance().displayStats(context))
+				)
 
 		);
 	}
