@@ -19,12 +19,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import se.leddy231.playertrading.BarrelType;
+import se.leddy231.playertrading.PlayerTrading;
 import se.leddy231.playertrading.interfaces.IAugmentedBarrelEntity;
 
 @Mixin(PlayerWallHeadBlock.class)
 public class SkullBlockEntityMixin {
 
-    @Inject(at = @At("HEAD"),method = "setPlacedBy")
+    @Inject(at = @At("RETURN"),method = "setPlacedBy")
     private void onPlace(
             Level level,
             BlockPos pos,
@@ -37,14 +38,19 @@ public class SkullBlockEntityMixin {
         if (!(placer instanceof Player)) {
             return;
         }
+        PlayerTrading.LOGGER.info("Placed head");
         var direction = state.getValue(WallSkullBlock.FACING).getOpposite();
         var barrelPos = pos.relative(direction);
+        PlayerTrading.LOGGER.info("Barrel pos");
+        PlayerTrading.LOGGER.info(barrelPos);
         //check so the block entity exists and is a skullblock entity
         if (!(level.getBlockEntity(pos) instanceof SkullBlockEntity skullBlockEntity)) {
             return;
         }
         var ownerProfile = skullBlockEntity.getOwnerProfile();
         //check so that playerhead is valid
+        PlayerTrading.LOGGER.info("Owner profile");
+        PlayerTrading.LOGGER.info( ownerProfile);
         if (ownerProfile == null) {
             return;
         }
@@ -57,6 +63,7 @@ public class SkullBlockEntityMixin {
         if (!ownerProfile.getId().equals(placer.getUUID())) {
             return;
         }
+        PlayerTrading.LOGGER.info("Activating");
         IAugmentedBarrelEntity barrelEntity = (IAugmentedBarrelEntity) level.getBlockEntity(barrelPos);
         barrelEntity.activate((Player) placer, BarrelType.NONE);
     }
