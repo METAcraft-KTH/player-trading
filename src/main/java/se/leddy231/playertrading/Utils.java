@@ -2,38 +2,39 @@ package se.leddy231.playertrading;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 public class Utils {
     public static String posToString(BlockPos pos) {
         return "(" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ")";
     }
 
-    public static void sendMessage(PlayerEntity player, Text text) {
-        player.sendMessage(text, false);
+    public static void sendMessage(Player player, Component component) {
+        player.sendSystemMessage(component);
     }
 
-    public static void sendMessage(PlayerEntity player, String text) {
-        player.sendMessage(new LiteralText(text), false);
+    public static void sendMessage(Player player, String text) {
+        player.sendSystemMessage(Component.literal(text));
     }
 
-    public static void sendToast(PlayerEntity player, String text) {
-        player.sendMessage(new LiteralText(text), true);
+    public static void sendToast(Player player, String text) {
+        //lösa
     }
-    
+
     public static boolean canStacksCombine(ItemStack first, ItemStack second) {
         if (first.isEmpty() || second.isEmpty()) {
             return true;
         }
         Item item = first.getItem();
-        return second.isOf(item) && ItemStack.areNbtEqual(first, second)
-                && first.getCount() + second.getCount() <= item.getMaxCount();
+        return second.is(item) && ItemStack.isSameItemSameTags(first, second)
+                && first.getCount() + second.getCount() <= item.getMaxStackSize();
     }
 
     // /!\ Assumes canStacksCombine is true
@@ -57,7 +58,7 @@ public class Utils {
             return false;
         }
         Item item = first.getItem();
-        return second.isOf(item) && ItemStack.areNbtEqual(first, second) && first.getCount() >= second.getCount();
+        return second.is(item) && ItemStack.isSameItemSameTags(first, second) && first.getCount() >= second.getCount();
     }
 
     public static ItemStack subtract(ItemStack first, ItemStack second) {
@@ -69,26 +70,26 @@ public class Utils {
         return ret;
     }
 
-    public static boolean canPutInInventory(ItemStack stack, Inventory inventory) {
+    public static boolean canPutInInventory(ItemStack stack, Container inventory) {
         return inventoryIteration(stack, inventory, false);
     }
 
-    public static boolean tryPutInInventory(ItemStack stack, Inventory inventory) {
+    public static boolean tryPutInInventory(ItemStack stack, Container inventory) {
         return inventoryIteration(stack, inventory, true);
     }
 
-    private static boolean inventoryIteration(ItemStack stack, Inventory inventory, boolean putItemIn) {
+    private static boolean inventoryIteration(ItemStack stack, Container inventory, boolean putItemIn) {
         if (stack.isEmpty())
             return true;
         if (inventory == null)
             return false;
 
-        for (int i = 0; i < inventory.size(); i++) {
-            ItemStack current = inventory.getStack(i);
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack current = inventory.getItem(i);
             if (Utils.canStacksCombine(current, stack)) {
                 if (putItemIn) {
                     current = Utils.combine(current, stack);
-                    inventory.setStack(i, current);
+                    inventory.setItem(i, current);
                 }
                 return true;
             }
@@ -96,16 +97,16 @@ public class Utils {
         return false;
     }
 
-    public static boolean canPullFromInventory(ItemStack stack, Inventory inventory) {
+    public static boolean canPullFromInventory(ItemStack stack, Container inventory) {
         if (stack.isEmpty())
             return true;
         if (inventory == null)
             return false;
 
         int count = stack.getCount();
-        for (int i = 0; i < inventory.size(); i++) {
-            ItemStack current = inventory.getStack(i);
-            if (current.isOf(stack.getItem()) && ItemStack.areNbtEqual(current, stack)) {
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack current = inventory.getItem(i);
+            if (current.is(stack.getItem()) && ItemStack.isSameItemSameTags(current, stack)) {
                 count -= current.getCount();
             }
             if (count <= 0) {
@@ -115,7 +116,7 @@ public class Utils {
         return false;
     }
 
-    public static boolean tryPullFromInventory(ItemStack stack, Inventory inventory) {
+    public static boolean tryPullFromInventory(ItemStack stack, Container inventory) {
         List<Integer> slotsToClear = new ArrayList<>();
         if (stack.isEmpty())
             return true;
@@ -123,9 +124,9 @@ public class Utils {
             return false;
 
         int amountToPull = stack.getCount();
-        for (int i = 0; i < inventory.size(); i++) {
-            ItemStack current = inventory.getStack(i);
-            if (current.isOf(stack.getItem()) && ItemStack.areNbtEqual(current, stack)) {
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack current = inventory.getItem(i);
+            if (current.is(stack.getItem()) && ItemStack.isSameItemSameTags(current, stack)) {
 
                 int currentAmount = current.getCount();
                 if (currentAmount <= amountToPull) {
@@ -134,7 +135,7 @@ public class Utils {
                     if (amountToPull == 0)
                         break;
                 } else {
-                    current.decrement(amountToPull);
+                    current.shrink(amountToPull);
                     amountToPull = 0;
                     break;
                 }
@@ -143,7 +144,7 @@ public class Utils {
         }
         if (amountToPull == 0) {
             for (Integer i : slotsToClear) {
-                inventory.setStack(i, ItemStack.EMPTY);
+                inventory.setItem(i, ItemStack.EMPTY);
             }
             return true;
         }

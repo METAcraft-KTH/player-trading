@@ -1,9 +1,9 @@
 package se.leddy231.playertrading;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.village.TradeOffer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.MerchantOffer;
 
-public class ShopTradeOffer extends TradeOffer{
+public class ShopTradeOffer extends MerchantOffer {
     public int shopBarrelInventoryIndex;
     public boolean valid;
     public String invalidReason;
@@ -24,15 +24,11 @@ public class ShopTradeOffer extends TradeOffer{
     }
 
     public ItemStack getFirst() {
-        return getOriginalFirstBuyItem();
+        return getCostA();
     }
 
     public ItemStack getSecond() {
-        return getSecondBuyItem();
-    }
-
-    public ItemStack getResult() {
-        return getSellItem();
+        return getCostB();
     }
 
     public ShopTradeOffer asUsed() {

@@ -1,18 +1,17 @@
 package se.leddy231.playertrading.mixin;
 
+import net.minecraft.world.inventory.MerchantContainer;
+import net.minecraft.world.inventory.MerchantMenu;
+import net.minecraft.world.item.trading.Merchant;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-import net.minecraft.screen.MerchantScreenHandler;
-import net.minecraft.village.Merchant;
-import net.minecraft.village.MerchantInventory;
-
-@Mixin(MerchantScreenHandler.class)
+@Mixin(MerchantMenu.class)
 public interface MerchantScreenHandlerAccessor {
     
     @Accessor
-    public Merchant getMerchant();
+    Merchant getTrader();
 
     @Accessor
-    public MerchantInventory getMerchantInventory();
+    MerchantContainer getTradeContainer();
 }
