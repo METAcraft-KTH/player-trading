@@ -1,46 +1,53 @@
 package se.leddy231.playertrading.mixin;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BarrelBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SignBlock;
+import net.minecraft.world.level.block.WallSignBlock;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import net.minecraft.block.BarrelBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.WallSignBlock;
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import org.w3c.dom.Text;
 import se.leddy231.playertrading.interfaces.IAugmentedBarrelEntity;
 import se.leddy231.playertrading.BarrelType;
 
 @Mixin(SignBlockEntity.class)
 public class SignEntityMixin {
 
-    @Inject(at = @At("RETURN"), method = "onActivate")
-    public void createShop(ServerPlayerEntity player, final CallbackInfoReturnable<Boolean> callback) {
+    @Inject(at = @At("RETURN"), method = "executeClickCommandsIfPresent")
+    public void createShop(
+            Player player,
+            Level level,
+            BlockPos pos,
+            boolean frontText,
+            CallbackInfoReturnable<Boolean> cir
+    ) {
         SignBlockEntity signEntity = (SignBlockEntity) (Object) this;
-        Text text = signEntity.getTextOnRow(0, false);
+        Component text = signEntity.getFrontText().getMessage(0,false);
         // Has shop tag on sign
-        BarrelType type = BarrelType.fromSignTag(text.asString());
+        BarrelType type = BarrelType.fromSignTag(text.getString());
         if (type == BarrelType.NONE)
             return;
 
-        World world = signEntity.getWorld();
-        BlockState signState = world.getBlockState(signEntity.getPos());
+        Level world = signEntity.getLevel();
+        BlockState signState = signEntity.getBlockState();
         Block signBlock = signState.getBlock();
         // Is a wall sign (and not on a stick in the ground)
         if (!(signBlock instanceof WallSignBlock))
             return;
-
-        BlockPos pos = signEntity.getPos();
-        Direction dir = signState.get(WallSignBlock.FACING).getOpposite();
-        pos = pos.offset(dir);
-        BlockState barrelState = signEntity.getWorld().getBlockState(pos);
+        Direction dir = signState.getValue(WallSignBlock.FACING).getOpposite();
+        pos = pos.relative(dir);
+        BlockState barrelState = world.getBlockState(pos);
         // Sign is attached to a barrel
         if (!(barrelState.getBlock() instanceof BarrelBlock))
             return;

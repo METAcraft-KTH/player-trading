@@ -1,18 +1,18 @@
 package se.leddy231.playertrading;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.Merchant;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.block.entity.BarrelBlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.village.Merchant;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOfferList;
 import se.leddy231.playertrading.interfaces.IAugmentedBarrelEntity;
 import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
 import se.leddy231.playertrading.mixin.MerchantScreenHandlerAccessor;
@@ -20,7 +20,7 @@ import se.leddy231.playertrading.mixin.MerchantScreenHandlerAccessor;
 public class ShopMerchant implements Merchant {
     private static final String SHOP_TITLE = "Barrel shop";
     @Nullable
-    public PlayerEntity currentCustomer;
+    public Player currentCustomer;
     public IShopBarrelEntity shopEntity;
     // Trades that expire/are used up needs to be kept inte the trades list until
     // the screen is closed
@@ -36,14 +36,14 @@ public class ShopMerchant implements Merchant {
     }
 
     public void clearOldTrades() {
-        oldTrades = new ShopTradeOffer[shopEntity.getShopBarrel().getEntity().size()];
+        oldTrades = new ShopTradeOffer[shopEntity.getShopBarrel().getEntity().getContainerSize()];
     }
 
     public void onScreenClose() {
         clearOldTrades();
         if (shopEntity.getType() == BarrelType.SINGLEUSE) {
             boolean hasValidTradesLeft = false;
-            for (TradeOffer tradeOffer : getOffers()) {
+            for (MerchantOffer tradeOffer : getOffers()) {
                 ShopTradeOffer shopOffer = (ShopTradeOffer) tradeOffer;
                 if (shopOffer.valid) {
                     hasValidTradesLeft = true;
@@ -56,17 +56,17 @@ public class ShopMerchant implements Merchant {
     }
 
     @Override
-    public void setCurrentCustomer(@Nullable PlayerEntity var1) {
+    public void setTradingPlayer(@Nullable Player var1) {
         currentCustomer = var1;
     }
 
     @Nullable
     @Override
-    public PlayerEntity getCurrentCustomer() {
+    public Player getTradingPlayer() {
         return currentCustomer;
     }
 
-    private Inventory getOutputInventory() {
+    private Container getOutputInventory() {
         IAugmentedBarrelEntity barrel = shopEntity.getOutputBarrel();
         if (barrel != null) {
             return barrel.getEntity();
@@ -74,7 +74,7 @@ public class ShopMerchant implements Merchant {
         return null;
     }
 
-    private Inventory getStockInventory() {
+    private Container getStockInventory() {
         IAugmentedBarrelEntity barrel = shopEntity.getStockBarrel();
         if (barrel != null) {
             return barrel.getEntity();
@@ -82,7 +82,7 @@ public class ShopMerchant implements Merchant {
         return null;
     }
 
-    public void openShop(PlayerEntity player) {
+    public void openShop(Player player) {
         if (currentCustomer != null) {
             Utils.sendToast(player, "This shop is currently in use");
             return;
@@ -91,23 +91,23 @@ public class ShopMerchant implements Merchant {
             Utils.sendToast(player, "This shop is currently being edited by its owner");
             return;
         }
-        setCurrentCustomer(player);
-        sendOffers(player, new LiteralText(SHOP_TITLE), 0);
+        setTradingPlayer(player);
+        openTradingScreen(player, Component.literal(SHOP_TITLE), 0);
     }
 
     public void forceCloseShop() {
         if (currentCustomer != null) {
-            currentCustomer.currentScreenHandler.close(currentCustomer);
+            currentCustomer.containerMenu.removed(currentCustomer);
         }
     }
 
     // Optimization: cache this and only refresh on barrel inventory changes
-    public TradeOfferList getOffers() {
-        TradeOfferList list = new TradeOfferList();
-        Inventory outputBarrel = getOutputInventory();
-        Inventory stockBarrel = getStockInventory();
+    public MerchantOffers getOffers() {
+        MerchantOffers list = new MerchantOffers();
+        Container outputBarrel = getOutputInventory();
+        Container stockBarrel = getStockInventory();
 
-        int maxIndex = shopEntity.getShopBarrel().getEntity().size() - 1;
+        int maxIndex = shopEntity.getShopBarrel().getEntity().getContainerSize() - 1;
         int index = 0;
         while (index + 2 <= maxIndex) {
             ShopTradeOffer offer = getCachedOfferFromIndex(index, outputBarrel, stockBarrel);
@@ -119,7 +119,7 @@ public class ShopMerchant implements Merchant {
         return list;
     }
 
-    private ShopTradeOffer getCachedOfferFromIndex(int index, Inventory outputBarrel, Inventory stockBarrel) {
+    private ShopTradeOffer getCachedOfferFromIndex(int index, Container outputBarrel, Container stockBarrel) {
         ShopTradeOffer newOffer = getOfferFromIndex(index, outputBarrel, stockBarrel);
         if (newOffer != null) {
             oldTrades[index] = newOffer.asUsed();
@@ -128,13 +128,13 @@ public class ShopMerchant implements Merchant {
         return oldTrades[index];
     }
 
-    private ShopTradeOffer getOfferFromIndex(int index, Inventory outputBarrel, Inventory stockBarrel) {
-        Inventory shopBarrel = shopEntity.getShopBarrel().getEntity();
+    private ShopTradeOffer getOfferFromIndex(int index, Container outputBarrel, Container stockBarrel) {
+        Container shopBarrel = shopEntity.getShopBarrel().getEntity();
         BarrelType shopType = shopEntity.getType();
 
-        ItemStack first = shopBarrel.getStack(index).copy();
-        ItemStack second = shopBarrel.getStack(index + 1).copy();
-        ItemStack result = shopBarrel.getStack(index + 2).copy();
+        ItemStack first = shopBarrel.getItem(index).copy();
+        ItemStack second = shopBarrel.getItem(index + 1).copy();
+        ItemStack result = shopBarrel.getItem(index + 2).copy();
         if (first.isEmpty() || result.isEmpty()) {
             return null;
         }
@@ -191,10 +191,10 @@ public class ShopMerchant implements Merchant {
         return ShopTradeOffer.invalid(first, second, result, index, "this is a unknown shop type");
     }
 
-    public void checkTrades(PlayerEntity player) {
-        TradeOfferList offers = getOffers();
+    public void checkTrades(Player player) {
+        MerchantOffers offers = getOffers();
         boolean allValid = true;
-        for (TradeOffer offer : offers) {
+        for (MerchantOffer offer : offers) {
             ShopTradeOffer shopOffer = (ShopTradeOffer) offer;
             if (shopOffer.valid)
                 continue;
@@ -211,18 +211,18 @@ public class ShopMerchant implements Merchant {
     public void refreshTrades() {
         if (ignoreRefresh)
             return;
-        int syncid = currentCustomer.currentScreenHandler.syncId;
-        currentCustomer.sendTradeOffers(syncid, getOffers(), 0, 0, this.isLeveledMerchant(), this.canRefreshTrades());
-        MerchantScreenHandlerAccessor accessor = (MerchantScreenHandlerAccessor) currentCustomer.currentScreenHandler;
-        accessor.getMerchantInventory().updateOffers();
+        int syncid = currentCustomer.containerMenu.containerId;
+        currentCustomer.sendMerchantOffers(syncid, getOffers(), 0, 0, this.showProgressBar(), this.canRestock());
+        MerchantScreenHandlerAccessor accessor = (MerchantScreenHandlerAccessor) currentCustomer.containerMenu;
+        accessor.getTradeContainer().setChanged();
     }
 
-    public void trade(TradeOffer var1) {
+    public void trade(MerchantOffer var1) {
         ShopTradeOffer offer = (ShopTradeOffer) var1;
         ignoreRefresh = true;
 
         if (shopEntity.getType().isAdminType()) {
-            Inventory outputBarrel = getOutputInventory();
+            Container outputBarrel = getOutputInventory();
             ItemStack first = offer.getFirst().copy();
             ItemStack second = offer.getSecond().copy();
             Utils.tryPutInInventory(first, outputBarrel);
@@ -231,10 +231,10 @@ public class ShopMerchant implements Merchant {
                 int firstSlot = offer.shopBarrelInventoryIndex;
                 int secondSlot = firstSlot + 1;
                 int resultSlot = firstSlot + 2;
-                Inventory shopBarrel = shopEntity.getShopBarrel().getEntity();
-                shopBarrel.setStack(firstSlot, ItemStack.EMPTY);
-                shopBarrel.setStack(secondSlot, ItemStack.EMPTY);
-                shopBarrel.setStack(resultSlot, ItemStack.EMPTY);
+                Container shopBarrel = shopEntity.getShopBarrel().getEntity();
+                shopBarrel.setItem(firstSlot, ItemStack.EMPTY);
+                shopBarrel.setItem(secondSlot, ItemStack.EMPTY);
+                shopBarrel.setItem(resultSlot, ItemStack.EMPTY);
             }
             ignoreRefresh = false;
             refreshTrades();
@@ -244,16 +244,16 @@ public class ShopMerchant implements Merchant {
         int firstSlot = offer.shopBarrelInventoryIndex;
         int secondSlot = firstSlot + 1;
         int resultSlot = firstSlot + 2;
-        Inventory shopBarrel = shopEntity.getShopBarrel().getEntity();
-        Inventory outputBarrel = getOutputInventory();
-        Inventory stockBarrel = getStockInventory();
+        Container shopBarrel = shopEntity.getShopBarrel().getEntity();
+        Container outputBarrel = getOutputInventory();
+        Container stockBarrel = getStockInventory();
 
         ItemStack first = offer.getFirst().copy();
         ItemStack second = offer.getSecond().copy();
         ItemStack result = offer.getResult().copy();
-        boolean firstValid = ItemStack.areEqual(shopBarrel.getStack(firstSlot), first);
-        boolean secondValid = ItemStack.areEqual(shopBarrel.getStack(secondSlot), second);
-        boolean resultValid = ItemStack.areEqual(shopBarrel.getStack(resultSlot), result);
+        boolean firstValid = ItemStack.isSameItem(shopBarrel.getItem(firstSlot), first);
+        boolean secondValid = ItemStack.isSameItem(shopBarrel.getItem(secondSlot), second);
+        boolean resultValid = ItemStack.isSameItem(shopBarrel.getItem(resultSlot), result);
         if (!firstValid) {
             PlayerTrading.LOGGER.error("First items of a trade mismatched!");
         }
@@ -266,57 +266,63 @@ public class ShopMerchant implements Merchant {
         boolean firstWentToOutput = Utils.tryPutInInventory(first, outputBarrel);
         boolean secondWentToOutput = Utils.tryPutInInventory(second, outputBarrel);
         if (!firstWentToOutput) {
-            shopBarrel.setStack(firstSlot, Utils.combine(first, first));
+            shopBarrel.setItem(firstSlot, Utils.combine(first, first));
         }
         if (!secondWentToOutput) {
-            shopBarrel.setStack(secondSlot, Utils.combine(second, second));
+            shopBarrel.setItem(secondSlot, Utils.combine(second, second));
         }
         boolean resultTakenFromStock = firstWentToOutput && secondWentToOutput
                 && Utils.tryPullFromInventory(result, stockBarrel);
         if (!resultTakenFromStock) {
-            shopBarrel.setStack(resultSlot, ItemStack.EMPTY);
+            shopBarrel.setItem(resultSlot, ItemStack.EMPTY);
         }
-        offer.use();
+        offer.setToOutOfStock();
         ignoreRefresh = false;
         refreshTrades();
     }
 
     private void selfDestruct() {
         BarrelBlockEntity entity = shopEntity.getEntity();
-        entity.clear();
-        BlockPos pos = entity.getPos();
-        shopEntity.getEntity().getWorld().breakBlock(pos, false);
+        entity.setRemoved();
+        BlockPos pos = entity.getBlockPos();
+        shopEntity.getEntity().getLevel().destroyBlock(pos, false);
     }
 
     @Override
-    public void setOffersFromServer(TradeOfferList var1) {
+    public void overrideOffers(MerchantOffers var1) {
     }
 
     @Override
-    public void onSellingItem(ItemStack var1) {
+    public void notifyTrade(MerchantOffer offer) {
+
     }
 
     @Override
-    public int getExperience() {
+    public void notifyTradeUpdated(ItemStack stack) {
+
+    }
+
+    @Override
+    public int getVillagerXp() {
         return 0;
     }
 
     @Override
-    public void setExperienceFromServer(int var1) {
+    public void overrideXp(int var1) {
     }
 
     @Override
-    public boolean isLeveledMerchant() {
+    public boolean showProgressBar() {
         return false;
     }
 
     @Override
-    public SoundEvent getYesSound() {
-        return SoundEvents.ENTITY_VILLAGER_YES;
+    public SoundEvent getNotifyTradeSound() {
+        return SoundEvents.VILLAGER_YES;
     }
 
     @Override
-    public boolean isClient() {
+    public boolean isClientSide() {
         return false;
     }
 }

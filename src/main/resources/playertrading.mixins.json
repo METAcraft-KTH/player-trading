@@ -4,15 +4,15 @@
   "package": "se.leddy231.playertrading.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "BlockEntityMixin",
     "BarrelBlockMixin",
     "BarrelEntityMixin",
-    "SignEntityMixin",
+    "BlockEntityMixin",
+    "MerchantScreenHandlerAccessor",
     "MerchantScreenHandlerMixin",
-    "MerchantScreenHandlerAccessor"
+    "SignEntityMixin",
+    "SkullBlockEntityMixin"
   ],
   "client": [
-    
   ],
   "injectors": {
     "defaultRequire": 1
