@@ -12,7 +12,7 @@ public class ShopKey {
 
     public static final String KEY_TAG = "shop_key";
     public static final String CUSTOM_MODEL_DATA_TAG = "CustomModelData";
-    
+
     public static void makeIntoKeyForPlayer(ItemStack stack, Player player) {
         String key_uuid = player.getStringUUID();
         CompoundTag nbt = stack.getOrCreateTag();
@@ -36,7 +36,7 @@ public class ShopKey {
         if (nbt == null) {
             return false;
         }
-        String key_uuid  = nbt.getString(KEY_TAG);
+        String key_uuid = nbt.getString(KEY_TAG);
         return stack.is(Items.GOLD_INGOT) && key_uuid.equals(uuid.toString());
     }
 }

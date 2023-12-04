@@ -1,8 +1,6 @@
 package se.leddy231.playertrading;
 
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
@@ -10,16 +8,20 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-public class DebugStickCommand {
+public class DebugStick {
 
     public static final ItemStack STICK = new ItemStack(Items.STICK, 1);
+
+    public static boolean isStick(ItemStack stack) {
+        return ItemStack.isSameItemSameTags(stack, DebugStick.STICK);
+    }
 
     public static void initStick() {
         STICK.setHoverName(Component.literal("Shop debug stick"));
         STICK.addTagElement("Shop", StringTag.valueOf("Debug stick"));
     }
 
-    public static int run(CommandContext<CommandSourceStack> context) {
+    public static int runCommand(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         Player player;
         player = source.getPlayer();

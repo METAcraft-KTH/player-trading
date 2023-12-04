@@ -1,15 +1,14 @@
 package se.leddy231.playertrading;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Utils {
     public static String posToString(BlockPos pos) {
@@ -33,8 +32,9 @@ public class Utils {
             return true;
         }
         Item item = first.getItem();
-        return second.is(item) && ItemStack.isSameItemSameTags(first, second)
-                && first.getCount() + second.getCount() <= item.getMaxStackSize();
+        return second.is(item) && ItemStack.isSameItemSameTags(first,
+                                                               second
+        ) && first.getCount() + second.getCount() <= item.getMaxStackSize();
     }
 
     // /!\ Assumes canStacksCombine is true
@@ -79,10 +79,8 @@ public class Utils {
     }
 
     private static boolean inventoryIteration(ItemStack stack, Container inventory, boolean putItemIn) {
-        if (stack.isEmpty())
-            return true;
-        if (inventory == null)
-            return false;
+        if (stack.isEmpty()) return true;
+        if (inventory == null) return false;
 
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack current = inventory.getItem(i);
@@ -98,10 +96,8 @@ public class Utils {
     }
 
     public static boolean canPullFromInventory(ItemStack stack, Container inventory) {
-        if (stack.isEmpty())
-            return true;
-        if (inventory == null)
-            return false;
+        if (stack.isEmpty()) return true;
+        if (inventory == null) return false;
 
         int count = stack.getCount();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
@@ -118,10 +114,8 @@ public class Utils {
 
     public static boolean tryPullFromInventory(ItemStack stack, Container inventory) {
         List<Integer> slotsToClear = new ArrayList<>();
-        if (stack.isEmpty())
-            return true;
-        if (inventory == null)
-            return false;
+        if (stack.isEmpty()) return true;
+        if (inventory == null) return false;
 
         int amountToPull = stack.getCount();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
@@ -132,8 +126,7 @@ public class Utils {
                 if (currentAmount <= amountToPull) {
                     amountToPull -= currentAmount;
                     slotsToClear.add(i);
-                    if (amountToPull == 0)
-                        break;
+                    if (amountToPull == 0) break;
                 } else {
                     current.shrink(amountToPull);
                     amountToPull = 0;

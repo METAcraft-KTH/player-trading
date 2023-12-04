@@ -1,25 +1,26 @@
 package se.leddy231.playertrading.interfaces;
 
-import java.util.UUID;
-
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import se.leddy231.playertrading.BarrelType;
 
+import java.util.UUID;
+
 public interface IAugmentedBarrelEntity {
 
-    public abstract BarrelType getType();
+    BarrelType getType();
 
-    public abstract UUID getOwner();
+    UUID getOwner();
 
-    public abstract void activate(Player player, BarrelType signType);
+    void activate(Player player, BarrelType signType);
 
-    public abstract void onInventoryChange();
+    void playerTroubleshoot(Player player);
 
-    public abstract IShopBarrelEntity findConnectedShop();
+    void onInventoryChange();
 
-    public abstract boolean isBarrelOpen();
+    IShopBarrelEntity findConnectedShop();
 
-    public abstract BarrelBlockEntity getEntity();
+    boolean isBarrelOpen();
+
+    BarrelBlockEntity getEntity();
 }

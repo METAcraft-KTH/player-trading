@@ -9,7 +9,6 @@
     "BlockEntityMixin",
     "MerchantScreenHandlerAccessor",
     "MerchantScreenHandlerMixin",
-    "SignEntityMixin",
     "SkullBlockEntityMixin"
   ],
   "client": [

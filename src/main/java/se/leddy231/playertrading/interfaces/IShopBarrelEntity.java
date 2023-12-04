@@ -4,13 +4,13 @@ import se.leddy231.playertrading.ShopMerchant;
 
 public interface IShopBarrelEntity extends IAugmentedBarrelEntity {
 
-    public abstract ShopMerchant getShopMerchant();
+    ShopMerchant getShopMerchant();
 
-    public abstract IAugmentedBarrelEntity getOutputBarrel();
+    IAugmentedBarrelEntity getOutputBarrel();
 
-    public abstract IAugmentedBarrelEntity getStockBarrel();
+    IAugmentedBarrelEntity getStockBarrel();
 
-    public abstract IShopBarrelEntity getShopBarrel();
+    IShopBarrelEntity getShopBarrel();
 
-    public abstract boolean isAnyBarrelOpen();
+    boolean isAnyBarrelOpen();
 }

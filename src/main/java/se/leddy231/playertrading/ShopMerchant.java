@@ -12,7 +12,6 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import org.jetbrains.annotations.Nullable;
-
 import se.leddy231.playertrading.interfaces.IAugmentedBarrelEntity;
 import se.leddy231.playertrading.interfaces.IShopBarrelEntity;
 import se.leddy231.playertrading.mixin.MerchantScreenHandlerAccessor;
@@ -22,11 +21,11 @@ public class ShopMerchant implements Merchant {
     @Nullable
     public Player currentCustomer;
     public IShopBarrelEntity shopEntity;
-    // Trades that expire/are used up needs to be kept inte the trades list until
+    // Trades that expire/are used up needs to be kept in the trades list until
     // the screen is closed
     // Otherwise, the client game crashes
     public ShopTradeOffer[] oldTrades;
-    // Ignore inventory refresh while moving thins around in the inventory
+    // Ignore inventory refresh while moving things around in the inventory
     private boolean ignoreRefresh = false;
 
     public ShopMerchant(IShopBarrelEntity shopEntity) {
@@ -47,6 +46,7 @@ public class ShopMerchant implements Merchant {
                 ShopTradeOffer shopOffer = (ShopTradeOffer) tradeOffer;
                 if (shopOffer.valid) {
                     hasValidTradesLeft = true;
+                    break;
                 }
             }
             if (!hasValidTradesLeft) {
@@ -55,15 +55,15 @@ public class ShopMerchant implements Merchant {
         }
     }
 
-    @Override
-    public void setTradingPlayer(@Nullable Player var1) {
-        currentCustomer = var1;
-    }
-
     @Nullable
     @Override
     public Player getTradingPlayer() {
         return currentCustomer;
+    }
+
+    @Override
+    public void setTradingPlayer(@Nullable Player var1) {
+        currentCustomer = var1;
     }
 
     private Container getOutputInventory() {
@@ -83,12 +83,8 @@ public class ShopMerchant implements Merchant {
     }
 
     public void openShop(Player player) {
-        if (currentCustomer != null) {
+        if (currentCustomer != null || shopEntity.isAnyBarrelOpen()) {
             Utils.sendToast(player, "This shop is currently in use");
-            return;
-        }
-        if (shopEntity.isAnyBarrelOpen()) {
-            Utils.sendToast(player, "This shop is currently being edited by its owner");
             return;
         }
         setTradingPlayer(player);
@@ -157,16 +153,28 @@ public class ShopMerchant implements Merchant {
                 return ShopTradeOffer.invalid(first, second, result, index, "no stock barrel is connected");
             }
             if (!firstFitsInOutputBarrel) {
-                return ShopTradeOffer.invalid(first, second, result, index,
-                        "the first payment item(s) does not fit in output barrel");
+                return ShopTradeOffer.invalid(first,
+                                              second,
+                                              result,
+                                              index,
+                                              "the first payment item(s) does not fit in output barrel"
+                );
             }
             if (!secondFitsInOutputBarrel) {
-                return ShopTradeOffer.invalid(first, second, result, index,
-                        "the second payment item(s) does not fit in output barrel");
+                return ShopTradeOffer.invalid(first,
+                                              second,
+                                              result,
+                                              index,
+                                              "the second payment item(s) does not fit in output barrel"
+                );
             }
             if (!canPullFromStock) {
-                return ShopTradeOffer.invalid(first, second, result, index,
-                        "the result item(s) are not in the stock barrel");
+                return ShopTradeOffer.invalid(first,
+                                              second,
+                                              result,
+                                              index,
+                                              "the result item(s) are not in the stock barrel"
+                );
             }
             return ShopTradeOffer.valid(first, second, result, index);
         }
@@ -193,15 +201,20 @@ public class ShopMerchant implements Merchant {
 
     public void checkTrades(Player player) {
         MerchantOffers offers = getOffers();
+        if (offers.isEmpty()) {
+            Utils.sendMessage(player, "No trades set up");
+            return;
+        }
         boolean allValid = true;
         for (MerchantOffer offer : offers) {
             ShopTradeOffer shopOffer = (ShopTradeOffer) offer;
-            if (shopOffer.valid)
-                continue;
+            if (shopOffer.valid) continue;
             allValid = false;
             int slot = shopOffer.shopBarrelInventoryIndex + 1;
             Utils.sendMessage(player,
-                    "Offer at slot " + slot + "-" + (slot + 2) + " is invalid because " + shopOffer.invalidReason);
+                              "Offer at slot " + slot + "-" + (slot + 2) + " is invalid because "
+                                      + shopOffer.invalidReason
+            );
         }
         if (allValid) {
             Utils.sendMessage(player, "All trades are valid");
@@ -209,18 +222,18 @@ public class ShopMerchant implements Merchant {
     }
 
     public void refreshTrades() {
-        if (ignoreRefresh)
-            return;
+        if (ignoreRefresh) return;
         int syncid = currentCustomer.containerMenu.containerId;
         currentCustomer.sendMerchantOffers(syncid, getOffers(), 0, 0, this.showProgressBar(), this.canRestock());
         MerchantScreenHandlerAccessor accessor = (MerchantScreenHandlerAccessor) currentCustomer.containerMenu;
         accessor.getTradeContainer().setChanged();
     }
 
-    public void trade(MerchantOffer var1) {
+    @Override
+    public void notifyTrade(MerchantOffer var1) {
         ShopTradeOffer offer = (ShopTradeOffer) var1;
         ignoreRefresh = true;
-
+        PlayerTrading.LOGGER.info(offer);
         if (shopEntity.getType().isAdminType()) {
             Container outputBarrel = getOutputInventory();
             ItemStack first = offer.getFirst().copy();
@@ -247,7 +260,7 @@ public class ShopMerchant implements Merchant {
         Container shopBarrel = shopEntity.getShopBarrel().getEntity();
         Container outputBarrel = getOutputInventory();
         Container stockBarrel = getStockInventory();
-
+        PlayerTrading.LOGGER.info(shopBarrel);
         ItemStack first = offer.getFirst().copy();
         ItemStack second = offer.getSecond().copy();
         ItemStack result = offer.getResult().copy();
@@ -266,13 +279,14 @@ public class ShopMerchant implements Merchant {
         boolean firstWentToOutput = Utils.tryPutInInventory(first, outputBarrel);
         boolean secondWentToOutput = Utils.tryPutInInventory(second, outputBarrel);
         if (!firstWentToOutput) {
+            PlayerTrading.LOGGER.info("Put in first");
             shopBarrel.setItem(firstSlot, Utils.combine(first, first));
         }
         if (!secondWentToOutput) {
             shopBarrel.setItem(secondSlot, Utils.combine(second, second));
         }
-        boolean resultTakenFromStock = firstWentToOutput && secondWentToOutput
-                && Utils.tryPullFromInventory(result, stockBarrel);
+        boolean resultTakenFromStock =
+                firstWentToOutput && secondWentToOutput && Utils.tryPullFromInventory(result, stockBarrel);
         if (!resultTakenFromStock) {
             shopBarrel.setItem(resultSlot, ItemStack.EMPTY);
         }
@@ -293,13 +307,7 @@ public class ShopMerchant implements Merchant {
     }
 
     @Override
-    public void notifyTrade(MerchantOffer offer) {
-
-    }
-
-    @Override
     public void notifyTradeUpdated(ItemStack stack) {
-
     }
 
     @Override
