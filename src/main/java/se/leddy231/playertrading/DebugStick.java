@@ -4,29 +4,57 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class DebugStick {
 
-    public static final ItemStack STICK = new ItemStack(Items.STICK, 1);
+    public static final ItemStack DEBUG_STICK = new ItemStack(Items.STICK, 1);
+    public static final ItemStack ADMIN_STICK = new ItemStack(Items.STICK, 1);
+    public static final ItemStack SINGLE_USE_STICK = new ItemStack(Items.STICK, 1);
 
-    public static boolean isStick(ItemStack stack) {
-        return ItemStack.isSameItemSameTags(stack, DebugStick.STICK);
+    public static boolean isDebugStick(ItemStack stack) {
+        return ItemStack.isSameItemSameTags(stack, DebugStick.DEBUG_STICK);
+    }
+
+    public static boolean isMakeAdminStick(ItemStack stack) {
+        return ItemStack.isSameItemSameTags(stack, DebugStick.ADMIN_STICK);
+
+    }
+
+    public static boolean isMakeSingleUseStick(ItemStack stack) {
+        return ItemStack.isSameItemSameTags(stack, DebugStick.SINGLE_USE_STICK);
     }
 
     public static void initStick() {
-        STICK.setHoverName(Component.literal("Shop debug stick"));
-        STICK.addTagElement("Shop", StringTag.valueOf("Debug stick"));
+        DEBUG_STICK.setHoverName(Component.literal("Shop debug stick"));
+        DEBUG_STICK.addTagElement("Shop", StringTag.valueOf("Debug stick"));
+
+        ADMIN_STICK.setHoverName(Component.literal("Make admin shop stick"));
+        ADMIN_STICK.addTagElement("Shop", StringTag.valueOf("Make admin shop stick"));
+
+        SINGLE_USE_STICK.setHoverName(Component.literal("Make single use shop stick"));
+        SINGLE_USE_STICK.addTagElement("Shop", StringTag.valueOf("Make single use shop stick"));
     }
 
-    public static int runCommand(CommandContext<CommandSourceStack> context) {
+    public static int giveDebugStick(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        Player player;
-        player = source.getPlayer();
-        ItemStack stack = STICK.copy();
-        player.addItem(stack);
+        ItemStack stack = DEBUG_STICK.copy();
+        source.getPlayer().addItem(stack);
+        return 0;
+    }
+
+    public static int giveAdminStick(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        ItemStack stack = ADMIN_STICK.copy();
+        source.getPlayer().addItem(stack);
+        return 0;
+    }
+
+    public static int giveSingleUseStick(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        ItemStack stack = SINGLE_USE_STICK.copy();
+        source.getPlayer().addItem(stack);
         return 0;
     }
 }

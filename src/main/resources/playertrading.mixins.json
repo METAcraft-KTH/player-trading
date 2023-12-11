@@ -5,11 +5,15 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "BarrelBlockMixin",
-    "BarrelEntityMixin",
     "BlockEntityMixin",
-    "MerchantScreenHandlerAccessor",
-    "MerchantScreenHandlerMixin",
-    "SkullBlockEntityMixin"
+    "HopperBlockMixin",
+    "HopperEntityMixin",
+    "ItemMixin",
+    "MerchantMenuAccessor",
+    "MerchantMenuMixin",
+    "PlayerHeadBlockMixin",
+    "PlayerWallHeadBlockMixin",
+    "SkullEntityMixin"
   ],
   "client": [
   ],

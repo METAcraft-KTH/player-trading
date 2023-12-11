@@ -32,9 +32,8 @@ public class Utils {
             return true;
         }
         Item item = first.getItem();
-        return second.is(item) && ItemStack.isSameItemSameTags(first,
-                                                               second
-        ) && first.getCount() + second.getCount() <= item.getMaxStackSize();
+        return second.is(item) && ItemStack.isSameItemSameTags(first, second)
+                && first.getCount() + second.getCount() <= item.getMaxStackSize();
     }
 
     // /!\ Assumes canStacksCombine is true
@@ -142,5 +141,16 @@ public class Utils {
             return true;
         }
         return false;
+    }
+
+    public static int emptySlotsInContainer(Container container) {
+        int count = 0;
+        for (int i = 0; i < container.getContainerSize(); i++) {
+            var stack = container.getItem(i);
+            if (stack.isEmpty()) {
+                count++;
+            }
+        }
+        return count;
     }
 }

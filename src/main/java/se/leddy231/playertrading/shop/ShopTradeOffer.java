@@ -1,10 +1,10 @@
-package se.leddy231.playertrading;
+package se.leddy231.playertrading.shop;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.MerchantOffer;
 
 public class ShopTradeOffer extends MerchantOffer {
-    public int shopBarrelInventoryIndex;
+    public int offerIndex;
     public boolean valid;
     public String invalidReason;
 
@@ -14,7 +14,7 @@ public class ShopTradeOffer extends MerchantOffer {
         super(first, second, result, 0, valid ? 1 : 0, 0, 1, 0);
         this.valid = valid;
         this.invalidReason = invalidReason;
-        shopBarrelInventoryIndex = index;
+        offerIndex = index;
     }
 
     public static ShopTradeOffer valid(ItemStack first, ItemStack second, ItemStack result, int index) {
@@ -35,13 +35,11 @@ public class ShopTradeOffer extends MerchantOffer {
         return getCostB();
     }
 
-    public ShopTradeOffer asUsed() {
-        return ShopTradeOffer.invalid(
-                getFirst(),
-                getSecond(),
-                getResult(),
-                shopBarrelInventoryIndex,
-                "this trade is old (someone has the trade screen still open)"
-        );
+    public ShopTradeOffer asInvalid(String reason) {
+        return ShopTradeOffer.invalid(getFirst(), getSecond(), getResult(), offerIndex, reason);
+    }
+
+    public ShopTradeOffer asValid() {
+        return ShopTradeOffer.valid(getFirst(), getSecond(), getResult(), offerIndex);
     }
 }

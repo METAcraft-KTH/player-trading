@@ -13,11 +13,15 @@ public class ShopKey {
     public static final String KEY_TAG = "shop_key";
     public static final String CUSTOM_MODEL_DATA_TAG = "CustomModelData";
 
+    public static boolean canMakeIntoKey(ItemStack stack) {
+        return stack.is(Items.GOLD_INGOT) && stack.getCount() == 1 && !stack.hasTag();
+    }
+
     public static void makeIntoKeyForPlayer(ItemStack stack, Player player) {
-        String key_uuid = player.getStringUUID();
-        CompoundTag nbt = stack.getOrCreateTag();
-        nbt.putString(KEY_TAG, key_uuid);
-        nbt.putInt(CUSTOM_MODEL_DATA_TAG, 231);
+        String key_uuid = player.getUUID().toString();
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putString(KEY_TAG, key_uuid);
+        tag.putInt(CUSTOM_MODEL_DATA_TAG, 231);
 
         String name = player.getName().getString();
         stack.setHoverName(Component.literal(name + "'s Shop key"));
