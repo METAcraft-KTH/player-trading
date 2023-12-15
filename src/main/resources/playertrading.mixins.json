@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "BarrelBlockMixin",
+    "BlockBehaviourMixin",
     "BlockEntityMixin",
     "HopperBlockMixin",
     "HopperEntityMixin",
@@ -12,7 +13,7 @@
     "MerchantMenuAccessor",
     "MerchantMenuMixin",
     "PlayerHeadBlockMixin",
-    "PlayerWallHeadBlockMixin",
+    "ShapedRecipeMixin",
     "SkullEntityMixin"
   ],
   "client": [

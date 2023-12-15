@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "playertrading",
+  "pattern": [
+    "AAA",
+    "BCB",
+    "BDB"
+  ],
+  "key": {
+    "A": {
+      "tag": "minecraft:wool"
+    },
+    "B": {
+      "tag": "minecraft:planks"
+    },
+    "C": {
+      "item": "minecraft:barrel"
+    },
+    "D": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "minecraft:player_head",
+    "count": 1
+  }
+}

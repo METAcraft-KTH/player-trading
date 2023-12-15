@@ -33,16 +33,17 @@ public class ShopConfigContainer extends SimpleContainer implements MenuProvider
     }
 
 
-    public ShopTradeOffer getOfferFromIndex(int index) {
-        index = index * 3;
+    public ShopTradeOffer getOfferFromIndex(int offerIndex) {
+        var index = offerIndex * 3;
         ItemStack first = getItem(index).copy();
         ItemStack second = getItem(index + 1).copy();
         ItemStack result = getItem(index + 2).copy();
+
         if (first.isEmpty() || result.isEmpty()) {
             return null;
         }
 
-        return ShopTradeOffer.valid(first, second, result, index);
+        return ShopTradeOffer.valid(first, second, result, offerIndex);
     }
 
     @Override

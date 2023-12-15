@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import se.leddy231.playertrading.PlayerTrading;
+import se.leddy231.playertrading.ShopBlock;
 import se.leddy231.playertrading.Utils;
 import se.leddy231.playertrading.interfaces.IBarrelEntity;
 import se.leddy231.playertrading.interfaces.ISkullEntity;
@@ -40,7 +40,7 @@ public class SkullEntityMixin implements ISkullEntity {
             BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit
     ) {
         if (shop == null || hand == InteractionHand.OFF_HAND) {
-            return InteractionResult.FAIL;
+            return InteractionResult.PASS;
         }
         return shop.onSkullUse(player);
     }
@@ -52,14 +52,13 @@ public class SkullEntityMixin implements ISkullEntity {
         if (!(placer instanceof Player player)) {
             return;
         }
-        var barrelPos = ISkullEntity.attachedToPosition(entity());
-        if (!(level.getBlockEntity(barrelPos) instanceof BarrelBlockEntity barrelEntity)) {
+
+        if (!ShopBlock.isShopBlock(entity())) {
             return;
         }
 
-        //compare placer uuid with uuid from shop block head
-        var ownerProfile = entity().getOwnerProfile();
-        if (ownerProfile == null || !ownerProfile.getId().equals(PlayerTrading.SHOP_BLOCK_UUID)) {
+        var barrelPos = ISkullEntity.attachedToPosition(entity());
+        if (!(level.getBlockEntity(barrelPos) instanceof BarrelBlockEntity barrelEntity)) {
             return;
         }
 

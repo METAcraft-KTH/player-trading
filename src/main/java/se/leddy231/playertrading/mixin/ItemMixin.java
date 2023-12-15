@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import se.leddy231.playertrading.PlayerTrading;
 import se.leddy231.playertrading.interfaces.IBarrelEntity;
 import se.leddy231.playertrading.interfaces.ISkullEntity;
 
@@ -22,14 +21,12 @@ public class ItemMixin {
         if (entity instanceof BarrelBlockEntity barrelEntity) {
             var shop = IBarrelEntity.getConnectedShop(barrelEntity);
             if (shop != null) {
-                PlayerTrading.LOGGER.info("Barrel click");
                 shop.onBarrelUse(context.getPlayer());
             }
         }
         if (entity instanceof SkullBlockEntity skullEntity) {
             var shop = ((ISkullEntity) skullEntity).getShop();
             if (shop != null) {
-                PlayerTrading.LOGGER.info("Hopper click");
                 shop.onSkullUse(context.getPlayer());
             }
         }

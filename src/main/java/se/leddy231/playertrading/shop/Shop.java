@@ -257,8 +257,8 @@ public class Shop {
         if (shopType.isAdminType()) {
             return;
         }
-        if (!firstSuccess || secondSuccess || resultSuccess) {
-            PlayerTrading.LOGGER.info(firstSuccess + " " + secondSuccess + " " + resultSuccess);
+        if (!(firstSuccess || secondSuccess || resultSuccess)) {
+            PlayerTrading.LOGGER.info("Crafting failure " + firstSuccess + " " + secondSuccess + " " + resultSuccess);
         }
     }
 

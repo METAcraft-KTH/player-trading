@@ -10,6 +10,7 @@ public class Commands {
         root.then(LiteralArgumentBuilder.<CommandSourceStack>literal("debug-stick").executes(DebugStick::giveDebugStick));
         root.then(LiteralArgumentBuilder.<CommandSourceStack>literal("make-admin-stick").executes(DebugStick::giveAdminStick));
         root.then(LiteralArgumentBuilder.<CommandSourceStack>literal("make-single-use-stick").executes(DebugStick::giveSingleUseStick));
+        root.then(LiteralArgumentBuilder.<CommandSourceStack>literal("block").executes(ShopBlock::giveShopBlock));
         dispatcher.register(root);
     }
 }
