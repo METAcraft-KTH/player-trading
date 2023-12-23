@@ -13,11 +13,10 @@
     "MerchantMenuAccessor",
     "MerchantMenuMixin",
     "PlayerHeadBlockMixin",
-    "ShapedRecipeMixin",
+    "RecipeManagerMixin",
     "SkullEntityMixin"
   ],
-  "client": [
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   }

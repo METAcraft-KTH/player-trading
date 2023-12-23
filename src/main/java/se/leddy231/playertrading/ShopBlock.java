@@ -17,7 +17,10 @@ public class ShopBlock {
     public static final String texture = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvN2UzZGViNTdlYWEyZjRkNDAzYWQ1NzI4M2NlOGI0MTgwNWVlNWI2ZGU5MTJlZTJiNGVhNzM2YTlkMWY0NjVhNyJ9fX0=";
 
     public static void initShopBlock() {
-        SHOP_HEAD_BLOCK.setHoverName(Component.literal("Shop"));
+        makeIntoShopBlock(SHOP_HEAD_BLOCK);
+    }
+
+    public static void makeIntoShopBlock(ItemStack item) {
         var ownerTag = new CompoundTag();
         var propertiesTag = new CompoundTag();
         var texturesTag = new ListTag();
@@ -27,7 +30,8 @@ public class ShopBlock {
         propertiesTag.put("textures", texturesTag);
         ownerTag.put("Properties", propertiesTag);
         ownerTag.putUUID("Id", SHOP_BLOCK_UUID);
-        SHOP_HEAD_BLOCK.getTag().put("SkullOwner", ownerTag);
+        item.setHoverName(Component.literal("Shop"));
+        item.getTag().put("SkullOwner", ownerTag);
     }
 
     public static boolean isShopBlock(SkullBlockEntity entity) {
