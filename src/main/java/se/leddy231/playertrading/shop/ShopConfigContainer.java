@@ -1,6 +1,8 @@
 package se.leddy231.playertrading.shop;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -22,7 +24,26 @@ public class ShopConfigContainer extends SimpleContainer implements MenuProvider
 
     @Override
     public Component getDisplayName() {
-        return Component.literal("Shop Config Menu");
+        var title = Component.literal("Shop Config Menu");
+
+        // Font magic
+        // a = move cursor by -8
+        //     (back by 8, aligns to vanilla GUI corner)
+        // b = shop_config_menu.png
+        //     (width: 176, so moves cursor by 176)
+        // c = move cursor by -169
+        //     (back by 169 = -8 + 176 + 1, resets cursor.
+        //      + 1 is to count space between characters)
+        //
+        // See: https://github.com/METAcraft-KTH/resource-pack
+        //
+        var fontMagic = Component.literal("abc").withStyle(style ->
+            style
+                .withFont(new ResourceLocation("playertrading", "shop_config_menu"))
+                .withColor(ChatFormatting.WHITE)
+        );
+
+        return Component.empty().append(fontMagic).append(title);
     }
 
     @Nullable
