@@ -18,6 +18,9 @@ public interface IBarrelEntity {
 
     static @Nullable Shop getConnectedShop(BarrelBlockEntity barrelEntity) {
         var level = barrelEntity.getLevel();
+        if (level == null) {
+            return null;
+        }
         var pos = barrelEntity.getBlockPos();
         for (var direction : Direction.values()) {
             if (direction == Direction.DOWN) {
