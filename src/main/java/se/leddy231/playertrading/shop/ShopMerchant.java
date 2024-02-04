@@ -12,7 +12,9 @@ import se.leddy231.playertrading.Utils;
 import se.leddy231.playertrading.mixin.MerchantMenuAccessor;
 
 public class ShopMerchant implements Merchant {
-    private static final String SHOP_TITLE = "Shop";
+    private static final Component SHOP_TITLE = Component.translatableWithFallback(
+            "gui.playertrading.shop", "Shop"
+    );
     @Nullable
     public Player currentCustomer;
 
@@ -47,11 +49,13 @@ public class ShopMerchant implements Merchant {
 
     public void openShop(Player player) {
         if (currentCustomer != null) {
-            Utils.sendToast(player, "This shop is currently in use");
+            Utils.sendToast(player, Component.translatableWithFallback(
+                    "toast.playertrading.shop_busy", "This shop is currently in use"
+            ));
             return;
         }
         setTradingPlayer(player);
-        openTradingScreen(player, Component.literal(SHOP_TITLE), 0);
+        openTradingScreen(player, SHOP_TITLE, 0);
     }
 
     public void forceCloseShop() {
@@ -73,7 +77,10 @@ public class ShopMerchant implements Merchant {
             if (offer != null) {
                 offer = shop.validateOffer(offer);
                 if (hasTraded && shop.shopType == ShopType.SINGLEUSE) {
-                    offer = offer.asInvalid("Trade expired");
+                    offer = offer.asInvalid(Component.translatableWithFallback(
+                            "message.playertrading.invalid_reason.expired",
+                            "Trade expired"
+                    ));
                 }
                 list.add(offer);
             }

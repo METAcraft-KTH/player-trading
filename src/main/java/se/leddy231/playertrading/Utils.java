@@ -19,11 +19,7 @@ public class Utils {
         player.sendSystemMessage(component);
     }
 
-    public static void sendMessage(Player player, String text) {
-        player.sendSystemMessage(Component.literal(text));
-    }
-
-    public static void sendToast(Player player, String text) {
+    public static void sendToast(Player player, Component text) {
         //lösa
     }
 

@@ -2,6 +2,7 @@ package se.leddy231.playertrading.mixin;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -64,12 +65,17 @@ public class SkullEntityMixin implements ISkullEntity {
 
         var existingShop = IBarrelEntity.getConnectedShop(barrelEntity);
         if (existingShop != null) {
-            Utils.sendMessage(player, "This barrel is already a shop.");
+            Utils.sendMessage(player, Component.translatableWithFallback(
+                    "message.playertrading.already_shop", "This barrel is already a shop."
+            ));
             return;
         }
 
         shop = new Shop(player.getUUID(), entity());
-        Utils.sendMessage(player, shop.shopType.typeName() + " created");
+        Utils.sendMessage(player, Component.translatableWithFallback(
+                "message.playertrading.created",
+                shop.shopType.typeName().getString() + " created", shop.shopType.typeName()
+        ));
     }
 
     @Inject(at = @At("RETURN"), method = "saveAdditional")

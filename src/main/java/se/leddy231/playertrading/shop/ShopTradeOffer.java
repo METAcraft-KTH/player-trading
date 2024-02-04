@@ -1,15 +1,16 @@
 package se.leddy231.playertrading.shop;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.MerchantOffer;
 
 public class ShopTradeOffer extends MerchantOffer {
     public int offerIndex;
     public boolean valid;
-    public String invalidReason;
+    public Component invalidReason;
 
     private ShopTradeOffer(
-            ItemStack first, ItemStack second, ItemStack result, boolean valid, int index, String invalidReason
+            ItemStack first, ItemStack second, ItemStack result, boolean valid, int index, Component invalidReason
     ) {
         super(first, second, result, 0, valid ? 1 : 0, 0, 1, 0);
         this.valid = valid;
@@ -18,11 +19,11 @@ public class ShopTradeOffer extends MerchantOffer {
     }
 
     public static ShopTradeOffer valid(ItemStack first, ItemStack second, ItemStack result, int index) {
-        return new ShopTradeOffer(first, second, result, true, index, "");
+        return new ShopTradeOffer(first, second, result, true, index, Component.empty());
     }
 
     public static ShopTradeOffer invalid(
-            ItemStack first, ItemStack second, ItemStack result, int index, String invalidReason
+            ItemStack first, ItemStack second, ItemStack result, int index, Component invalidReason
     ) {
         return new ShopTradeOffer(first, second, result, false, index, invalidReason);
     }
@@ -35,7 +36,7 @@ public class ShopTradeOffer extends MerchantOffer {
         return getCostB();
     }
 
-    public ShopTradeOffer asInvalid(String reason) {
+    public ShopTradeOffer asInvalid(Component reason) {
         return ShopTradeOffer.invalid(getFirst(), getSecond(), getResult(), offerIndex, reason);
     }
 

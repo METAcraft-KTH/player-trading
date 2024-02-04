@@ -1,6 +1,7 @@
 package se.leddy231.playertrading;
 
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -30,7 +31,11 @@ public class ShopBlock {
         propertiesTag.put("textures", texturesTag);
         ownerTag.put("Properties", propertiesTag);
         ownerTag.putUUID("Id", SHOP_BLOCK_UUID);
-        item.setHoverName(Component.literal("Shop"));
+        item.setHoverName(
+                Component.translatableWithFallback(
+                        "item.playertrading.shop", "Shop"
+                ).withStyle(style -> style.withItalic(false).withColor(ChatFormatting.WHITE))
+        );
         item.getTag().put("SkullOwner", ownerTag);
     }
 

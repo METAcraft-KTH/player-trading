@@ -1,12 +1,25 @@
 package se.leddy231.playertrading.shop;
 
+import net.minecraft.network.chat.Component;
+
 public enum ShopType {
-    SHOP(0, "Shop"), ADMIN(1, "Admin shop"), SINGLEUSE(2, "Single use");
+    SHOP(
+            0,
+            Component.translatableWithFallback("shoptype.playertrading.shop", "Shop")
+    ),
+    ADMIN(
+            1,
+            Component.translatableWithFallback("shoptype.playertrading.admin_shop", "Admin Shop")
+    ),
+    SINGLEUSE(
+            2,
+            Component.translatableWithFallback("shoptype.playertrading.single_use", "Single Use")
+    );
 
     private final int id;
-    private final String typeName;
+    private final Component typeName;
 
-    ShopType(int id, String typeName) {
+    ShopType(int id, Component typeName) {
         this.id = id;
         this.typeName = typeName;
     }
@@ -24,7 +37,7 @@ public enum ShopType {
         return id;
     }
 
-    public String typeName() {
+    public Component typeName() {
         return typeName;
     }
 

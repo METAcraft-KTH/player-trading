@@ -27,13 +27,22 @@ public class DebugStick {
     }
 
     public static void initStick() {
-        DEBUG_STICK.setHoverName(Component.literal("Shop debug stick"));
+        DEBUG_STICK.setHoverName(Component.translatableWithFallback(
+                "item.playertrading.shop_debug_stick",
+                "Shop debug stick"
+        ).withStyle(style -> style.withItalic(false)));
         DEBUG_STICK.addTagElement("Shop", StringTag.valueOf("Debug stick"));
 
-        ADMIN_STICK.setHoverName(Component.literal("Make admin shop stick"));
+        ADMIN_STICK.setHoverName(Component.translatableWithFallback(
+                "item.playertrading.admin_shop_debug_stick",
+                "Make admin shop stick"
+        ).withStyle(style -> style.withItalic(false)));
         ADMIN_STICK.addTagElement("Shop", StringTag.valueOf("Make admin shop stick"));
 
-        SINGLE_USE_STICK.setHoverName(Component.literal("Make single use shop stick"));
+        SINGLE_USE_STICK.setHoverName(Component.translatableWithFallback(
+                "item.playertrading.single_use_shop_debug_stick",
+                "Make single use shop stick"
+        ).withStyle(style -> style.withItalic(false)));
         SINGLE_USE_STICK.addTagElement("Shop", StringTag.valueOf("Make single use shop stick"));
     }
 

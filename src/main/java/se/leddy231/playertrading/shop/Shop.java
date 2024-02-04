@@ -2,6 +2,7 @@ package se.leddy231.playertrading.shop;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -96,19 +97,35 @@ public class Shop {
 
         if (player.hasPermissions(4) && DebugStick.isMakeAdminStick(usedItem)) {
             shopType = ShopType.ADMIN;
-            Utils.sendMessage(player, "Made into admin shop");
+            Utils.sendMessage(
+                    player,
+                    Component.translatableWithFallback(
+                            "message.playertrading.convert_to_admin_shop", "Made into admin shop"
+                    )
+            );
             return InteractionResult.SUCCESS;
         }
 
         if (player.hasPermissions(4) && DebugStick.isMakeSingleUseStick(usedItem)) {
             shopType = ShopType.SINGLEUSE;
             merchant.hasTraded = false; //reset just in case
-            Utils.sendMessage(player, "Made into single use shop");
+            Utils.sendMessage(
+                    player,
+                    Component.translatableWithFallback(
+                            "message.playertrading.convert_to_single_use", "Made into single use shop"
+                    )
+            );
             return InteractionResult.SUCCESS;
         }
 
         if (configContainer.menuOpen || IBarrelEntity.isOpen(barrelEntity())) {
-            Utils.sendMessage(player, "Shop is currently being edited");
+            Utils.sendMessage(
+                    player,
+                    Component.translatableWithFallback(
+                            "message.playertrading.being_edited",
+                            "Shop is currently being edited"
+                    )
+            );
             return InteractionResult.SUCCESS;
         }
 
@@ -126,7 +143,13 @@ public class Shop {
 
     public InteractionResult onBarrelUse(Player player) {
         if (configContainer.menuOpen || IBarrelEntity.isOpen(barrelEntity())) {
-            Utils.sendMessage(player, "Shop is currently being edited");
+            Utils.sendMessage(
+                    player,
+                    Component.translatableWithFallback(
+                            "message.playertrading.being_edited",
+                            "Shop is currently being edited"
+                    )
+            );
             return InteractionResult.SUCCESS;
         }
         if (hasAccessPermission(player)) {
@@ -175,7 +198,10 @@ public class Shop {
 
     public ShopTradeOffer validateOffer(ShopTradeOffer offer) {
         if (shopType == ShopType.SINGLEUSE && merchant.hasTraded) {
-            return offer.asInvalid("This trade has expired");
+            return offer.asInvalid(Component.translatableWithFallback(
+                    "message.playertrading.invalid_reason.has_expired",
+                    "This trade has expired"
+            ));
         }
 
         if (shopType.isAdminType()) {
@@ -186,7 +212,10 @@ public class Shop {
         var outputHopper = getOutputHopper();
         var stockHoppers = getStockHoppers();
         if (barrel == null) {
-            return offer.asInvalid("Shop not attached to a barrel");
+            return offer.asInvalid(Component.translatableWithFallback(
+                    "message.playertrading.invalid_reason.no_barrel",
+                    "Shop not attached to a barrel"
+            ));
         }
 
         var outputSlots = Utils.emptySlotsInContainer(barrel);
@@ -201,13 +230,22 @@ public class Shop {
                 || Utils.canPullFromInventory(offer.getResult(), barrel);
 
         if (!firstFitsInOutputs) {
-            return offer.asInvalid("the first payment item(s) does not fit in the output container(s)");
+            return offer.asInvalid(Component.translatableWithFallback(
+                    "message.playertrading.invalid_reason.insufficient_payment_space.1",
+                    "the first payment item(s) does not fit in the output container(s)"
+            ));
         }
         if (!secondFitsInOutputs) {
-            return offer.asInvalid("the second payment item(s) does not fit in the output container(s)");
+            return offer.asInvalid(Component.translatableWithFallback(
+                    "message.playertrading.invalid_reason.insufficient_payment_space.2",
+                    "the second payment item(s) does not fit in the output container(s)"
+            ));
         }
         if (!canPullFromStock) {
-            return offer.asInvalid("the result item(s) are not in the stock container(s)");
+            return offer.asInvalid(Component.translatableWithFallback(
+                    "message.playertrading.invalid_reason.no_result",
+                    "the result item(s) are not in the stock container(s)"
+            ));
         }
         return offer.asValid();
     }
@@ -275,21 +313,37 @@ public class Shop {
     public void checkTrades(Player player) {
         var outputHopper = getOutputHopper();
         if (outputHopper != null) {
-            Utils.sendMessage(player,
-                              "Shop sees prioritized output hopper at " + Utils.posToString(outputHopper.getBlockPos())
+            Utils.sendMessage(
+                    player,
+                    Component.translatableWithFallback(
+                            "message.playertrading.visible_output_hopper",
+                            "Shop sees prioritized output hopper at " + Utils.posToString(outputHopper.getBlockPos()),
+                            Utils.posToString(outputHopper.getBlockPos())
+                    )
             );
         }
 
         var stockHoppers = getStockHoppers();
         for (var hopper : stockHoppers) {
-            Utils.sendMessage(player,
-                              "Shop sees prioritized stock hopper at " + Utils.posToString(hopper.getBlockPos())
+            Utils.sendMessage(
+                    player,
+                    Component.translatableWithFallback(
+                            "message.playertrading.visible_stock_hopper",
+                            "Shop sees prioritized stock hopper at " + Utils.posToString(hopper.getBlockPos()),
+                            Utils.posToString(hopper.getBlockPos())
+                    )
             );
         }
 
         MerchantOffers offers = merchant.getOffers();
         if (offers.isEmpty()) {
-            Utils.sendMessage(player, "No trades set up");
+            Utils.sendMessage(
+                    player,
+                    Component.translatableWithFallback(
+                            "message.playertrading.no_trades",
+                            "No trades set up"
+                    )
+            );
             return;
         }
         boolean allValid = true;
@@ -299,13 +353,24 @@ public class Shop {
 
             allValid = false;
             int slot = shopOffer.offerIndex + 1;
-            Utils.sendMessage(player,
-                              "Offer at slot " + slot + "-" + (slot + 2) + " is invalid because "
-                                      + shopOffer.invalidReason
+            Utils.sendMessage(
+                    player,
+                    Component.translatableWithFallback(
+                            "message.playertrading.specific_offer_invalid",
+                            "Offer at slot " + slot + "-" + (slot + 2) + " is invalid because "
+                                    + shopOffer.invalidReason,
+                            slot, (slot + 2), shopOffer.invalidReason
+                    )
             );
         }
         if (allValid) {
-            Utils.sendMessage(player, "All trades are valid");
+            Utils.sendMessage(
+                    player,
+                    Component.translatableWithFallback(
+                            "message.playertrading.all_trades_valid",
+                            "All trades are valid"
+                    )
+            );
         }
     }
 

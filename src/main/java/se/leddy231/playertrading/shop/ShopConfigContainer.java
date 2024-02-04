@@ -24,7 +24,10 @@ public class ShopConfigContainer extends SimpleContainer implements MenuProvider
 
     @Override
     public Component getDisplayName() {
-        var title = Component.literal("Shop Config Menu");
+        var title = Component.translatableWithFallback(
+                "gui.playertrading.config_menu",
+                "Shop Config Menu"
+        );
 
         // Font magic
         // a = move cursor by -8

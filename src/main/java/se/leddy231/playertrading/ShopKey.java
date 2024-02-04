@@ -23,8 +23,12 @@ public class ShopKey {
         tag.putString(KEY_TAG, key_uuid);
         tag.putInt(CUSTOM_MODEL_DATA_TAG, 231);
 
-        String name = player.getName().getString();
-        stack.setHoverName(Component.literal(name + "'s Shop key"));
+        Component name = player.getName();
+        stack.setHoverName(Component.translatableWithFallback(
+                "item.playertrading.shop_key",
+                name.getString() + "'s Shop Key",
+                name
+        ).withStyle(style -> style.withItalic(false)));
     }
 
     public static boolean isKey(ItemStack stack) {
