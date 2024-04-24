@@ -1,15 +1,18 @@
 package se.leddy231.playertrading;
 
+import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class ShopBlock {
@@ -22,26 +25,25 @@ public class ShopBlock {
     }
 
     public static void makeIntoShopBlock(ItemStack item) {
-        var ownerTag = new CompoundTag();
-        var propertiesTag = new CompoundTag();
-        var texturesTag = new ListTag();
-        var textureValue = new CompoundTag();
-        textureValue.putString("Value", texture);
-        texturesTag.add(0, textureValue);
-        propertiesTag.put("textures", texturesTag);
-        ownerTag.put("Properties", propertiesTag);
-        ownerTag.putUUID("Id", SHOP_BLOCK_UUID);
-        item.setHoverName(
+        var propertyMap = new PropertyMap();
+        propertyMap.put("textures", new Property("textures", texture));
+        item.set(
+                DataComponents.ITEM_NAME,
                 Component.translatableWithFallback(
                         "item.playertrading.shop", "Shop"
                 ).withStyle(style -> style.withItalic(false).withColor(ChatFormatting.WHITE))
         );
-        item.getTag().put("SkullOwner", ownerTag);
+        item.set(
+                DataComponents.PROFILE,
+                new ResolvableProfile(
+                        Optional.empty(), Optional.of(SHOP_BLOCK_UUID), propertyMap
+                )
+        );
     }
 
     public static boolean isShopBlock(SkullBlockEntity entity) {
         var ownerProfile = entity.getOwnerProfile();
-        if (ownerProfile == null || !ownerProfile.getId().equals(SHOP_BLOCK_UUID)) {
+        if (ownerProfile == null || !ownerProfile.id().map(id -> id.equals(SHOP_BLOCK_UUID)).orElse(false)) {
             return false;
         }
         return true;

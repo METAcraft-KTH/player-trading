@@ -28,8 +28,8 @@ public class Utils {
             return true;
         }
         Item item = first.getItem();
-        return second.is(item) && ItemStack.isSameItemSameTags(first, second)
-                && first.getCount() + second.getCount() <= item.getMaxStackSize();
+        return ItemStack.isSameItemSameComponents(first, second)
+                && first.getCount() + second.getCount() <= first.getMaxStackSize();
     }
 
     // /!\ Assumes canStacksCombine is true
@@ -53,7 +53,7 @@ public class Utils {
             return false;
         }
         Item item = first.getItem();
-        return second.is(item) && ItemStack.isSameItemSameTags(first, second) && first.getCount() >= second.getCount();
+        return second.is(item) && ItemStack.isSameItemSameComponents(first, second) && first.getCount() >= second.getCount();
     }
 
     public static ItemStack subtract(ItemStack first, ItemStack second) {
@@ -97,7 +97,7 @@ public class Utils {
         int count = stack.getCount();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack current = inventory.getItem(i);
-            if (current.is(stack.getItem()) && ItemStack.isSameItemSameTags(current, stack)) {
+            if (current.is(stack.getItem()) && ItemStack.isSameItemSameComponents(current, stack)) {
                 count -= current.getCount();
             }
             if (count <= 0) {
@@ -115,7 +115,7 @@ public class Utils {
         int amountToPull = stack.getCount();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack current = inventory.getItem(i);
-            if (current.is(stack.getItem()) && ItemStack.isSameItemSameTags(current, stack)) {
+            if (current.is(stack.getItem()) && ItemStack.isSameItemSameComponents(current, stack)) {
 
                 int currentAmount = current.getCount();
                 if (currentAmount <= amountToPull) {

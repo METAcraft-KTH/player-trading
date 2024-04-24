@@ -1,9 +1,9 @@
 package se.leddy231.playertrading.mixin;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -26,27 +27,32 @@ import se.leddy231.playertrading.shop.Shop;
 @Mixin(SkullBlockEntity.class)
 public class SkullEntityMixin implements ISkullEntity {
 
+    @Unique
     private Shop shop;
 
+    @Unique
     SkullBlockEntity entity() {
         return (SkullBlockEntity) (Object) this;
     }
 
+    @Override
     @Nullable
-    public Shop getShop() {
+    public Shop player_trading$getShop() {
         return shop;
     }
 
-    public InteractionResult onUse(
-            BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit
+    @Override
+    public InteractionResult player_trading$onUseWithoutItem(
+            BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit
     ) {
-        if (shop == null || hand == InteractionHand.OFF_HAND) {
+        if (shop == null) {
             return InteractionResult.PASS;
         }
         return shop.onSkullUse(player);
     }
 
-    public void onPlace(
+    @Override
+    public void player_trading$onPlace(
             Level level, BlockPos pos, BlockState state, LivingEntity placer
     ) {
         //check so the placer is a player
@@ -79,14 +85,14 @@ public class SkullEntityMixin implements ISkullEntity {
     }
 
     @Inject(at = @At("RETURN"), method = "saveAdditional")
-    public void onNbtWrite(CompoundTag tag, CallbackInfo callback) {
+    public void onNbtWrite(CompoundTag compoundTag, HolderLookup.Provider provider, CallbackInfo ci) {
         if (shop != null) {
-            shop.saveAsTag(tag);
+            shop.saveAsTag(compoundTag, provider);
         }
     }
 
-    @Inject(at = @At("RETURN"), method = "load")
-    public void onNbtRead(CompoundTag tag, CallbackInfo callback) {
-        shop = Shop.loadFromTag(tag, entity());
+    @Inject(at = @At("RETURN"), method = "loadAdditional")
+    public void onNbtRead(CompoundTag compoundTag, HolderLookup.Provider provider, CallbackInfo ci) {
+        shop = Shop.loadFromTag(compoundTag, entity(), provider);
     }
 }

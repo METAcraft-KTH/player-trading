@@ -1,7 +1,6 @@
 package se.leddy231.playertrading.mixin;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -18,25 +17,20 @@ import se.leddy231.playertrading.interfaces.ISkullEntity;
 
 @Mixin(BlockBehaviour.class)
 public class BlockBehaviourMixin {
-    @Inject(method = "use", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "useWithoutItem", at = @At("HEAD"), cancellable = true)
     void use(
-            BlockState state,
-            Level level,
-            BlockPos pos,
-            Player player,
-            InteractionHand hand,
-            BlockHitResult hit,
-            CallbackInfoReturnable<InteractionResult> ci
+            BlockState blockState, Level level, BlockPos blockPos, Player player, BlockHitResult blockHitResult,
+            CallbackInfoReturnable<InteractionResult> cir
     ) {
-        if (state.getBlock() != Blocks.PLAYER_HEAD && state.getBlock() != Blocks.PLAYER_WALL_HEAD) {
+        if (blockState.getBlock() != Blocks.PLAYER_HEAD && blockState.getBlock() != Blocks.PLAYER_WALL_HEAD) {
             return;
         }
-        if (!(level.getBlockEntity(pos) instanceof SkullBlockEntity skullBlockEntity)) {
+        if (!(level.getBlockEntity(blockPos) instanceof SkullBlockEntity skullBlockEntity)) {
             return;
         }
         var entity = (ISkullEntity) skullBlockEntity;
-        var result = entity.onUse(state, level, pos, player, hand, hit);
-        ci.setReturnValue(result);
-        ci.cancel();
+        var result = entity.player_trading$onUseWithoutItem(blockState, level, blockPos, player, blockHitResult);
+        cir.setReturnValue(result);
+        cir.cancel();
     }
 }

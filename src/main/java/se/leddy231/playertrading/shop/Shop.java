@@ -1,6 +1,7 @@
 package se.leddy231.playertrading.shop;
 
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.ContainerHelper;
@@ -43,7 +44,7 @@ public class Shop {
         this.merchant = new ShopMerchant(this);
     }
 
-    public static @Nullable Shop loadFromTag(CompoundTag tag, SkullBlockEntity entity) {
+    public static @Nullable Shop loadFromTag(CompoundTag tag, SkullBlockEntity entity, HolderLookup.Provider provider) {
         if (!tag.hasUUID(OWNER_TAG)) {
             return null;
         }
@@ -57,15 +58,15 @@ public class Shop {
 
         if (tag.contains(CONFIG_TAG)) {
             var subTag = tag.getCompound(CONFIG_TAG);
-            ContainerHelper.loadAllItems(subTag, shop.configContainer.items);
+            ContainerHelper.loadAllItems(subTag, shop.configContainer.items, provider);
         }
         return shop;
     }
 
-    public void saveAsTag(CompoundTag tag) {
+    public void saveAsTag(CompoundTag tag, HolderLookup.Provider provider) {
         tag.putUUID(OWNER_TAG, owner);
         tag.putInt(TYPE_TAG, shopType.toInt());
-        tag.put(CONFIG_TAG, ContainerHelper.saveAllItems(new CompoundTag(), configContainer.items));
+        tag.put(CONFIG_TAG, ContainerHelper.saveAllItems(new CompoundTag(), configContainer.items, provider));
     }
 
     public int maxNumberOfTrades() {

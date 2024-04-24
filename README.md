@@ -1,4 +1,10 @@
 # Player trading, for Metacraft
+
+## Important
+Make sure to run `gradlew runDatagen` before compiling, otherwise the crafting recipe won't work!
+
+## Disclaimer, this readme is outdated!
+
 Set up player shops/trading stations with just barrels and signs!
 Server side only, 1.18.1 with Fabric loader.
 

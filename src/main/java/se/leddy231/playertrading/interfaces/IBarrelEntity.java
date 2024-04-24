@@ -32,7 +32,7 @@ public interface IBarrelEntity {
                 if (!attachedTo.equals(pos)) {
                     continue;
                 }
-                var shop = ((ISkullEntity) entity).getShop();
+                var shop = ((ISkullEntity) entity).player_trading$getShop();
                 if (shop != null) {
                     return shop;
                 }

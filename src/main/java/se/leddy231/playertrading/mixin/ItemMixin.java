@@ -25,7 +25,7 @@ public class ItemMixin {
             }
         }
         if (entity instanceof SkullBlockEntity skullEntity) {
-            var shop = ((ISkullEntity) skullEntity).getShop();
+            var shop = ((ISkullEntity) skullEntity).player_trading$getShop();
             if (shop != null) {
                 shop.onSkullUse(context.getPlayer());
             }

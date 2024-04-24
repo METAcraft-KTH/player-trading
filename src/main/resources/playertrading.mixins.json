@@ -12,8 +12,7 @@
     "ItemMixin",
     "MerchantMenuAccessor",
     "MerchantMenuMixin",
-    "PlayerHeadBlockMixin",
-    "RecipeManagerMixin",
+    "BlockMixin",
     "SkullEntityMixin"
   ],
   "client": [],

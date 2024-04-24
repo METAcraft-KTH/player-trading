@@ -1,8 +1,12 @@
 package se.leddy231.playertrading.shop;
 
+import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
+
+import java.util.Optional;
 
 public class ShopTradeOffer extends MerchantOffer {
     public int offerIndex;
@@ -12,10 +16,20 @@ public class ShopTradeOffer extends MerchantOffer {
     private ShopTradeOffer(
             ItemStack first, ItemStack second, ItemStack result, boolean valid, int index, Component invalidReason
     ) {
-        super(first, second, result, 0, valid ? 1 : 0, 0, 1, 0);
+        super(
+                fromStack(first), second.isEmpty() ? Optional.empty() : Optional.of(fromStack(second)),
+                result, 0, valid ? 1 : 0, 0, 1, 0
+        );
         this.valid = valid;
         this.invalidReason = invalidReason;
         offerIndex = index;
+    }
+
+    private static ItemCost fromStack(ItemStack stack) {
+        return new ItemCost(
+                stack.getItemHolder(), stack.getCount(),
+                DataComponentPredicate.allOf(stack.getComponents()), stack
+        );
     }
 
     public static ShopTradeOffer valid(ItemStack first, ItemStack second, ItemStack result, int index) {

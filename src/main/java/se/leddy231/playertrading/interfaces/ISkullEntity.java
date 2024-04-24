@@ -2,7 +2,6 @@ package se.leddy231.playertrading.interfaces;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -26,11 +25,11 @@ public interface ISkullEntity {
         return pos.relative(Direction.DOWN);
     }
 
-    @Nullable Shop getShop();
+    @Nullable Shop player_trading$getShop();
 
-    void onPlace(Level level, BlockPos pos, BlockState state, LivingEntity placer);
+    void player_trading$onPlace(Level level, BlockPos pos, BlockState state, LivingEntity placer);
 
-    InteractionResult onUse(
-            BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit
+    InteractionResult player_trading$onUseWithoutItem(
+            BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit
     );
 }

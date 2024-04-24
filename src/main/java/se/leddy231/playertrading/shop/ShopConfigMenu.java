@@ -52,7 +52,7 @@ public class ShopConfigMenu extends ChestMenu {
             ItemStack carried = getCarried();
             ItemStack targetItem = getSlot(slotId).getItem();
             if (carried.isEmpty()) {
-                var newCount = Math.min(targetItem.getCount() + 1, targetItem.getItem().getMaxStackSize());
+                var newCount = Math.min(targetItem.getCount() + 1, targetItem.getMaxStackSize());
                 if (button == 1) {
                     newCount = Math.max(targetItem.getCount() - 1, 1);
                 }
@@ -60,7 +60,7 @@ public class ShopConfigMenu extends ChestMenu {
                 getSlot(slotId).setChanged();
                 return;
             }
-            if (!ItemStack.isSameItemSameTags(carried, targetItem)) {
+            if (!ItemStack.isSameItemSameComponents(carried, targetItem)) {
                 var newTarget = carried.copy();
                 if (button == 1) {
                     newTarget.setCount(1);
@@ -68,10 +68,10 @@ public class ShopConfigMenu extends ChestMenu {
                 getSlot(slotId).set(newTarget);
             } else {
                 var newCount = Math.min(targetItem.getCount() + carried.getCount(),
-                                        targetItem.getItem().getMaxStackSize()
+                                        targetItem.getMaxStackSize()
                 );
                 if (button == 1) {
-                    newCount = Math.min(targetItem.getCount() + 1, targetItem.getItem().getMaxStackSize());
+                    newCount = Math.min(targetItem.getCount() + 1, targetItem.getMaxStackSize());
                 }
                 targetItem.setCount(newCount);
                 getSlot(slotId).setChanged();

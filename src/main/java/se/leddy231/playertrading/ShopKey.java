@@ -1,38 +1,46 @@
 package se.leddy231.playertrading;
 
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.CustomModelData;
 
 import java.util.UUID;
 
 public class ShopKey {
 
     public static final String KEY_TAG = "shop_key";
-    public static final String CUSTOM_MODEL_DATA_TAG = "CustomModelData";
 
     public static boolean canMakeIntoKey(ItemStack stack) {
-        return stack.is(Items.GOLD_INGOT) && stack.getCount() == 1 && !stack.hasTag();
+        return stack.is(Items.GOLD_INGOT) && stack.getCount() == 1 && !stack.has(DataComponents.CUSTOM_DATA);
     }
 
     public static void makeIntoKeyForPlayer(ItemStack stack, Player player) {
         String key_uuid = player.getUUID().toString();
-        CompoundTag tag = stack.getOrCreateTag();
-        tag.putString(KEY_TAG, key_uuid);
-        tag.putInt(CUSTOM_MODEL_DATA_TAG, 231);
 
         Component name = player.getName();
-        stack.setHoverName(Component.translatableWithFallback(
+        stack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(231));
+        stack.set(
+                DataComponents.ITEM_NAME,
+                Component.translatableWithFallback(
                 "item.playertrading.shop_key",
                 name.getString() + "'s Shop Key",
                 name
         ).withStyle(style -> style.withItalic(false)));
+        stack.set(
+                DataComponents.CUSTOM_DATA,
+                stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).update(nbt -> {
+                    nbt.putString(KEY_TAG, key_uuid);
+                })
+        );
     }
 
     public static boolean isKey(ItemStack stack) {
-        CompoundTag nbt = stack.getTag();
+        var nbt = stack.get(DataComponents.CUSTOM_DATA);
         if (nbt == null) {
             return false;
         }
@@ -40,11 +48,13 @@ public class ShopKey {
     }
 
     public static boolean isKeyForUUID(ItemStack stack, UUID uuid) {
-        CompoundTag nbt = stack.getTag();
+        var nbt = stack.get(DataComponents.CUSTOM_DATA);
         if (nbt == null) {
             return false;
         }
-        String key_uuid = nbt.getString(KEY_TAG);
+        String key_uuid = nbt.read(Codec.STRING.fieldOf(KEY_TAG)).resultOrPartial(
+                PlayerTrading.LOGGER::error
+        ).orElse("");
         return stack.is(Items.GOLD_INGOT) && key_uuid.equals(uuid.toString());
     }
 }

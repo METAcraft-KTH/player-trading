@@ -20,6 +20,9 @@
   "entrypoints": {
     "main": [
       "se.leddy231.playertrading.PlayerTrading"
+    ],
+    "fabric-datagen": [
+      "se.leddy231.playertrading.DataGen"
     ]
   },
   "mixins": [

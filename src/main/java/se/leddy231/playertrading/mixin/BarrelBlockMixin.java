@@ -1,7 +1,6 @@
 package se.leddy231.playertrading.mixin;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -20,17 +19,12 @@ import se.leddy231.playertrading.interfaces.IBarrelEntity;
 @Mixin(BarrelBlock.class)
 public class BarrelBlockMixin {
 
-    @Inject(at = @At("HEAD"), method = "use", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "useWithoutItem", cancellable = true)
     public void onUse(
-            BlockState state,
-            Level level,
-            BlockPos pos,
-            Player player,
-            InteractionHand hand,
-            BlockHitResult hit,
-            CallbackInfoReturnable<InteractionResult> ci
+            BlockState blockState, Level level, BlockPos blockPos, Player player, BlockHitResult blockHitResult,
+            CallbackInfoReturnable<InteractionResult> cir
     ) {
-        BlockEntity blockEntity = level.getBlockEntity(pos);
+        BlockEntity blockEntity = level.getBlockEntity(blockPos);
         if (!(blockEntity instanceof BarrelBlockEntity barrelEntity)) {
             return;
         }
@@ -40,8 +34,8 @@ public class BarrelBlockMixin {
         }
         var result = shop.onBarrelUse(player);
         if (result != null) {
-            ci.setReturnValue(result);
-            ci.cancel();
+            cir.setReturnValue(result);
+            cir.cancel();
         }
     }
 
