@@ -26,7 +26,7 @@ public class DataGen implements DataGeneratorEntrypoint {
 			return new RecipeProvider(output, registries) {
 				@Override
 				public void buildRecipes(RecipeOutput recipeOutput) {
-					var shopBlock = new ResourceLocation("playertrading", "shop_block");
+					var shopBlock = ResourceLocation.fromNamespaceAndPath("playertrading", "shop_block");
 					Advancement.Builder builder = recipeOutput.advancement().addCriterion(
 							"has_the_recipe", RecipeUnlockedTrigger.unlocked(shopBlock)
 					).rewards(AdvancementRewards.Builder.recipe(shopBlock)).requirements(

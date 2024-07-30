@@ -42,7 +42,7 @@ public class ShopConfigContainer extends SimpleContainer implements MenuProvider
         //
         var fontMagic = Component.literal("abc").withStyle(style ->
             style
-                .withFont(new ResourceLocation("playertrading", "shop_config_menu"))
+                .withFont(ResourceLocation.fromNamespaceAndPath("playertrading", "shop_config_menu"))
                 .withColor(ChatFormatting.WHITE)
         );
 
