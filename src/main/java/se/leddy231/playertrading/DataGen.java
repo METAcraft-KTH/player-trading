@@ -5,6 +5,8 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.critereon.PlayerTrigger;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -18,6 +20,7 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class DataGen implements DataGeneratorEntrypoint {
 	@Override
@@ -32,7 +35,12 @@ public class DataGen implements DataGeneratorEntrypoint {
 					).rewards(AdvancementRewards.Builder.recipe(shopBlock)).requirements(
 							AdvancementRequirements.Strategy.OR
 					);
-					builder.addCriterion(RecipeProvider.getHasName(Items.BARREL), RecipeProvider.has(Items.BARREL));
+					builder.addCriterion(
+							"trigger_always",
+							CriteriaTriggers.TICK.createCriterion(new PlayerTrigger.TriggerInstance(
+									Optional.empty()
+							))
+					);
 					recipeOutput.accept(
 							shopBlock,
 							new ShapedRecipe(
