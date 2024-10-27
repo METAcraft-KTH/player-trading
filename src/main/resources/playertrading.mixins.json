@@ -7,13 +7,14 @@
     "BarrelBlockMixin",
     "BlockBehaviourMixin",
     "BlockEntityMixin",
+    "BlockMixin",
     "HopperBlockMixin",
     "HopperEntityMixin",
     "ItemMixin",
     "MerchantMenuAccessor",
     "MerchantMenuMixin",
-    "BlockMixin",
-    "SkullEntityMixin"
+    "SkullEntityMixin",
+    "V1460Mixin"
   ],
   "client": [],
   "injectors": {

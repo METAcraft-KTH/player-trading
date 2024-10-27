@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 public class PlayerTrading implements ModInitializer {
     public static final Logger LOGGER = LogManager.getLogger("data/playertrading");
-
+    public static final String MODID = "leddy231-playertrading";
 
     @Override
     public void onInitialize() {

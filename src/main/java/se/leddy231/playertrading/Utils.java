@@ -16,7 +16,7 @@ public class Utils {
     }
 
     public static void sendMessage(Player player, Component component) {
-        player.sendSystemMessage(component);
+        player.displayClientMessage(component, false);
     }
 
     public static void sendToast(Player player, Component text) {

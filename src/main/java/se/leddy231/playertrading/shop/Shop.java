@@ -30,7 +30,7 @@ public class Shop {
     private static final String OWNER_TAG = "shop_owner";
     private static final String TYPE_TAG = "shop_type";
 
-    private static final String CONFIG_TAG = "shop_config";
+    private static final String CONFIG_TAG = "shop_config"; //Careful, this is used by the datafixer!
     public final ShopMerchant merchant;
     public final SkullBlockEntity entity;
     public final ShopConfigContainer configContainer;
