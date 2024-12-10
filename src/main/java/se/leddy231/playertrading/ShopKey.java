@@ -9,6 +9,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.CustomModelData;
 
+import java.util.List;
 import java.util.UUID;
 
 public class ShopKey {
@@ -23,7 +24,9 @@ public class ShopKey {
         String key_uuid = player.getUUID().toString();
 
         Component name = player.getName();
-        stack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(231));
+        stack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(
+                List.of(231.0f), List.of(), List.of(), List.of())
+        );
         stack.set(
                 DataComponents.ITEM_NAME,
                 Component.translatableWithFallback(

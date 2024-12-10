@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.Merchant;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 import se.leddy231.playertrading.Utils;
 import se.leddy231.playertrading.mixin.MerchantMenuAccessor;
@@ -138,5 +139,11 @@ public class ShopMerchant implements Merchant {
     @Override
     public boolean isClientSide() {
         return false;
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        return this.getTradingPlayer() == player && !shop.entity.isRemoved() &&
+                player.canInteractWithEntity(new AABB(shop.entity.getBlockPos()), 4.0);
     }
 }
