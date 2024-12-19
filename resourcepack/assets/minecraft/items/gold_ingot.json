@@ -1,0 +1,26 @@
+{
+  "model": {
+    "type": "range_dispatch",
+    "property": "custom_model_data",
+    "fallback": {
+      "type": "model",
+      "model": "item/gold_ingot"
+    },
+    "entries": [
+      {
+        "threshold": 231,
+        "model": {
+          "type": "model",
+          "model": "item/key"
+        }
+      },
+      {
+        "threshold": 231.1,
+        "model": {
+          "type": "model",
+          "model": "item/gold_ingot"
+        }
+      }
+    ]
+  }
+}
