@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import se.leddy231.playertrading.criteria.ShopCriteriaTriggers;
 
 public class PlayerTrading implements ModInitializer {
     public static final Logger LOGGER = LogManager.getLogger("data/playertrading");
@@ -11,6 +12,7 @@ public class PlayerTrading implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        ShopCriteriaTriggers.init();
         DebugStick.initStick();
         ShopBlock.initShopBlock();
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {

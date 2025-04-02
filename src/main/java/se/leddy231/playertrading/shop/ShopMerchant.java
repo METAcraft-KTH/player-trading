@@ -3,6 +3,7 @@ package se.leddy231.playertrading.shop;
 import com.google.common.base.Suppliers;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -11,11 +12,11 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 import se.leddy231.playertrading.Utils;
+import se.leddy231.playertrading.criteria.ShopCriteriaTriggers;
 import se.leddy231.playertrading.mixin.MerchantMenuAccessor;
 
 import java.util.Optional;
@@ -83,7 +84,8 @@ public class ShopMerchant implements Merchant {
                         .withParameter(LootContextParams.ORIGIN, currentCustomer.position())
                         .withParameter(LootContextParams.THIS_ENTITY, currentCustomer)
                         .withParameter(LootContextParams.BLOCK_STATE, shop.entity.getBlockState())
-                        .create(LootContextParamSets.BLOCK_USE)
+                        .withParameter(LootContextParams.BLOCK_ENTITY, shop.entity)
+                        .create(ShopCriteriaTriggers.SHOP_CONTEXT)
         ).create(Optional.empty());
     }
 
@@ -139,6 +141,9 @@ public class ShopMerchant implements Merchant {
         offer.setToOutOfStock();
         ignoreRefresh = false;
         refreshTrades();
+        if (this.getTradingPlayer() instanceof ServerPlayer player) {
+            ShopCriteriaTriggers.TRADE.trigger(player, shop, offer.getResult());
+        }
     }
 
     @Override

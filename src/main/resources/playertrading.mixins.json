@@ -1,23 +1,24 @@
 {
-  "required": true,
-  "minVersion": "0.8",
-  "package": "se.leddy231.playertrading.mixin",
-  "compatibilityLevel": "JAVA_16",
-  "mixins": [
-    "BarrelBlockMixin",
-    "BlockBehaviourMixin",
-    "BlockEntityMixin",
-    "BlockMixin",
-    "HopperBlockMixin",
-    "HopperEntityMixin",
-    "ItemMixin",
-    "MerchantMenuAccessor",
-    "MerchantMenuMixin",
-    "SkullEntityMixin",
-    "V1460Mixin"
-  ],
-  "client": [],
-  "injectors": {
-    "defaultRequire": 1
-  }
+	"required": true,
+	"minVersion": "0.8",
+	"package": "se.leddy231.playertrading.mixin",
+	"compatibilityLevel": "JAVA_16",
+	"mixins": [
+		"BarrelBlockMixin",
+		"BlockBehaviourMixin",
+		"BlockEntityMixin",
+		"BlockMixin",
+		"HopperBlockMixin",
+		"HopperEntityMixin",
+		"ItemMixin",
+		"LootContextParamSetsAccessor",
+		"MerchantMenuAccessor",
+		"MerchantMenuMixin",
+		"SkullEntityMixin",
+		"V1460Mixin"
+	],
+	"client": [],
+	"injectors": {
+		"defaultRequire": 1
+	}
 }
