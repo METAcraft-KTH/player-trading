@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import se.leddy231.playertrading.shop.Shop;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -29,7 +30,7 @@ public class V1460Mixin {
 		var current = map.get(id).get();
 		map.put(id, () -> DSL.and(
 				DSL.optional(DSL.field(
-					"shop_config", DSL.optionalFields(
+						Shop.CONFIG_TAG, DSL.optionalFields(
 						"Items",
 						DSL.list(References.ITEM_STACK.in(schema))
 					)

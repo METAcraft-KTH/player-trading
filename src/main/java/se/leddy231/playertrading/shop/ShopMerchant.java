@@ -1,16 +1,25 @@
 package se.leddy231.playertrading.shop;
 
+import com.google.common.base.Suppliers;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.Merchant;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 import se.leddy231.playertrading.Utils;
 import se.leddy231.playertrading.mixin.MerchantMenuAccessor;
+
+import java.util.Optional;
+import java.util.function.Supplier;
 
 public class ShopMerchant implements Merchant {
     private static final Component SHOP_TITLE = Component.translatableWithFallback(
@@ -65,6 +74,20 @@ public class ShopMerchant implements Merchant {
         }
     }
 
+    private LootContext getContext() {
+        if (currentCustomer == null || !(currentCustomer.level() instanceof ServerLevel world)) {
+            return null;
+        }
+        return new LootContext.Builder(
+                new LootParams.Builder(world)
+                        .withParameter(LootContextParams.ORIGIN, currentCustomer.position())
+                        .withParameter(LootContextParams.THIS_ENTITY, currentCustomer)
+                        .withParameter(LootContextParams.BLOCK_STATE, shop.entity.getBlockState())
+                        .create(LootContextParamSets.BLOCK_USE)
+        ).create(Optional.empty());
+    }
+
+    @Override
     // Optimization: cache this and only refresh on barrel inventory changes
     public MerchantOffers getOffers() {
         MerchantOffers list = new MerchantOffers();
@@ -73,6 +96,9 @@ public class ShopMerchant implements Merchant {
         //Container stockBarrel = getStockInventory();
 
         int maxIndex = shop.maxNumberOfTrades();
+
+        Supplier<LootContext> ctx = Suppliers.memoize(this::getContext);
+
         for (int i = 0; i < maxIndex; i++) {
             ShopTradeOffer offer = shop.configContainer.getOfferFromIndex(i);
             if (offer != null) {
@@ -81,6 +107,12 @@ public class ShopMerchant implements Merchant {
                     offer = offer.asInvalid(Component.translatableWithFallback(
                             "message.playertrading.invalid_reason.expired",
                             "Trade expired"
+                    ));
+                }
+                if (offer.valid && shop.hasCondition(i) && ctx.get() != null && !shop.getCondition(i).test(ctx.get())) {
+                    offer = offer.asInvalid(Component.translatableWithFallback(
+                            "message.playertrading.invalid_reason.condition_failed",
+                            "Trade condition not met"
                     ));
                 }
                 list.add(offer);

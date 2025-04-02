@@ -1,12 +1,20 @@
 package se.leddy231.playertrading.shop;
 
+import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.SlotRange;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
@@ -14,6 +22,8 @@ import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.jetbrains.annotations.Nullable;
 import se.leddy231.playertrading.DebugStick;
 import se.leddy231.playertrading.PlayerTrading;
@@ -22,20 +32,33 @@ import se.leddy231.playertrading.Utils;
 import se.leddy231.playertrading.interfaces.IBarrelEntity;
 import se.leddy231.playertrading.interfaces.ISkullEntity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class Shop {
     private static final String OWNER_TAG = "shop_owner";
     private static final String TYPE_TAG = "shop_type";
 
-    private static final String CONFIG_TAG = "shop_config"; //Careful, this is used by the datafixer!
+    public static final String CONFIG_TAG = "shop_config"; //Careful, this is used by the datafixer!
+
+    private static final String CONDITIONS = "shop_conditions";
+    private static final Codec<Map<SlotRange, ResourceKey<LootItemCondition>>> CONDITIONS_CODEC = Codec.unboundedMap(
+            ShopSlotRanges.CODEC,
+            ResourceKey.codec(Registries.PREDICATE)
+    );
+
     public final ShopMerchant merchant;
     public final SkullBlockEntity entity;
     public final ShopConfigContainer configContainer;
     public ShopType shopType = ShopType.SHOP;
     public UUID owner;
+
+    //I use LinkedHashMap in case you want to add functions to add remove conditions without reading/writing data later, and to preserve the order inserted.
+    //Forcing resource keys makes sure you won't need to worry about the datafixer (you just need to fix all datapacks when updating).
+    private final Map<SlotRange, ResourceKey<LootItemCondition>> conditions = new LinkedHashMap<>();
+
+    private final Int2ObjectMap<Predicate<LootContext>> conditionsCache = new Int2ObjectOpenHashMap<>();
+    private boolean conditionsCacheParsed = false;
 
     public Shop(UUID owner, SkullBlockEntity entity) {
         this.owner = owner;
@@ -60,6 +83,18 @@ public class Shop {
             var subTag = tag.getCompound(CONFIG_TAG);
             ContainerHelper.loadAllItems(subTag, shop.configContainer.items, provider);
         }
+
+        shop.conditions.clear(); //data remove will work since we clear here.
+        if (tag.contains(CONDITIONS)) {
+            //TODO Use the new 1.21.5 syntax for putting codecs neatly (tag.get(<name>, <codec>)).
+            CONDITIONS_CODEC.parse(provider.createSerializationContext(NbtOps.INSTANCE), tag.get(CONDITIONS)).resultOrPartial(
+                    PlayerTrading.LOGGER::error
+            ).ifPresent(
+		            shop.conditions::putAll
+            );
+        }
+        shop.updateConditionsCache();
+
         return shop;
     }
 
@@ -67,6 +102,16 @@ public class Shop {
         tag.putUUID(OWNER_TAG, owner);
         tag.putInt(TYPE_TAG, shopType.toInt());
         tag.put(CONFIG_TAG, ContainerHelper.saveAllItems(new CompoundTag(), configContainer.items, provider));
+
+        var ops = provider.createSerializationContext(NbtOps.INSTANCE);
+        //TODO Use the new 1.21.5 syntax for putting codecs neatly (tag.put(<name>, <codec>, <value>)).
+        if (!conditions.isEmpty()) {
+            CONDITIONS_CODEC.encodeStart(ops, conditions).resultOrPartial(
+                    PlayerTrading.LOGGER::error
+            ).ifPresent(
+                    conditions -> tag.put(CONDITIONS, conditions)
+            );
+        }
     }
 
     public int maxNumberOfTrades() {
@@ -393,5 +438,39 @@ public class Shop {
             entity.getLevel().destroyBlock(barrel.getBlockPos(), false);
         }
         entity.getLevel().destroyBlock(entity.getBlockPos(), false);
+    }
+
+    private void updateConditionsCache() {
+        if (entity.getLevel() != null && entity.getLevel().getServer() != null) {
+            conditionsCache.clear();
+            var predicates = entity.getLevel().getServer().reloadableRegistries().lookup().lookupOrThrow(Registries.PREDICATE);
+            for (var c : conditions.entrySet()) {
+                var condition = predicates.get(c.getValue()).map(Holder::value);
+                condition.ifPresent(lootItemCondition -> c.getKey().slots().forEach(
+                        slot -> conditionsCache.compute(slot, (s, existing) -> {
+                            if (existing == null) {
+                                return lootItemCondition;
+                            } else {
+                                return existing.and(lootItemCondition);
+                            }
+                        })
+                ));
+            }
+            conditionsCacheParsed = true; //When loading world might not be assigned.
+        }
+    }
+
+    public boolean hasCondition(int tradeSlot) {
+        if (!conditionsCacheParsed) {
+            updateConditionsCache(); //When loading world might not be assigned.
+        }
+        return conditionsCache.containsKey(tradeSlot);
+    }
+
+    public Predicate<LootContext> getCondition(int tradeSlot) {
+        if (!conditionsCacheParsed) {
+            updateConditionsCache(); //When loading world might not be assigned.
+        }
+        return conditionsCache.get(tradeSlot);
     }
 }

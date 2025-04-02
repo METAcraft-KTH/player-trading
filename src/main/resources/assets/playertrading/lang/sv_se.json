@@ -18,6 +18,7 @@
 	"message.playertrading.invalid_reason.insufficient_payment_space.2": "de andra betalningsföremålen får inte plats i utmatningsbehållarna",
 	"message.playertrading.invalid_reason.no_barrel": "Butiken sitter inte på en tunna",
 	"message.playertrading.invalid_reason.no_result": "resultatföremålen finns inte i lagringsbehållarna",
+	"message.playertrading.invalid_reason.condition_failed": "Utbytesvillkor ej uppfyllt",
 	"message.playertrading.no_trades": "Inga utbyten konfigurerade",
 	"message.playertrading.specific_offer_invalid": "Erbjudandet på plats %s-%s är ogiltigt på grund av %s",
 	"message.playertrading.visible_output_hopper": "Butiken ser en prioriterad utmatningstratt vid %s",
