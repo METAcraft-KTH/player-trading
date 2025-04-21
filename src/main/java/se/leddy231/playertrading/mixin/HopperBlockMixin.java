@@ -1,7 +1,7 @@
 package se.leddy231.playertrading.mixin;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -13,14 +13,10 @@ import se.leddy231.playertrading.interfaces.IHopperEntity;
 
 @Mixin(HopperBlock.class)
 public class HopperBlockMixin {
-    @Inject(at = @At("HEAD"), method = "onRemove")
+    @Inject(at = @At("HEAD"), method = "affectNeighborsAfterRemoval")
     private void onRemove(
-            BlockState state, Level world, BlockPos pos, BlockState newState, boolean moved, CallbackInfo ci
+            BlockState blockState, ServerLevel world, BlockPos pos, boolean bl, CallbackInfo ci
     ) {
-        if (state.is(newState.getBlock())) {
-            //Ignore state changes when for example changing texture to show the barrel being open.
-            return;
-        }
         var entity = world.getBlockEntity(pos);
         if (!(entity instanceof HopperBlockEntity hopperEntity)) {
             return;

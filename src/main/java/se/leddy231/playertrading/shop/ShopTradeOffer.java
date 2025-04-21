@@ -1,6 +1,6 @@
 package se.leddy231.playertrading.shop;
 
-import net.minecraft.core.component.DataComponentPredicate;
+import net.minecraft.core.component.DataComponentExactPredicate;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.ItemCost;
@@ -28,7 +28,7 @@ public class ShopTradeOffer extends MerchantOffer {
     private static ItemCost fromStack(ItemStack stack) {
         return new ItemCost(
                 stack.getItemHolder(), stack.getCount(), //DataComponentPredicate does not support checking for removed components.
-                DataComponentPredicate.allOf(stack.getComponentsPatch().split().added()), stack
+                DataComponentExactPredicate.allOf(stack.getComponentsPatch().split().added()), stack
         );
     }
 

@@ -27,14 +27,13 @@ public class V1460Mixin {
 			@Local Map<String, Supplier<TypeTemplate>> map
 	) {
 		String id = "minecraft:skull";
-		var current = map.get(id).get();
-		map.put(id, () -> DSL.and(
+		map.computeIfPresent(id, (k, current) -> () -> DSL.and(
 				DSL.optional(DSL.field(
 						Shop.CONFIG_TAG, DSL.optionalFields(
-						"Items",
-						DSL.list(References.ITEM_STACK.in(schema))
-					)
-				)), current
+								"Items",
+								DSL.list(References.ITEM_STACK.in(schema))
+						)
+				)), current.get()
 		));
 	}
 

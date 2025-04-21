@@ -1,6 +1,7 @@
 package se.leddy231.playertrading.mixin;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -39,14 +40,10 @@ public class BarrelBlockMixin {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "onRemove")
+    @Inject(at = @At("HEAD"), method = "affectNeighborsAfterRemoval")
     private void onRemove(
-            BlockState state, Level world, BlockPos pos, BlockState newState, boolean moved, CallbackInfo ci
+            BlockState blockState, ServerLevel world, BlockPos pos, boolean bl, CallbackInfo ci
     ) {
-        if (state.is(newState.getBlock())) {
-            //Ignore state changes when for example changing texture to show the barrel being open.
-            return;
-        }
         var entity = world.getBlockEntity(pos);
         if (!(entity instanceof BarrelBlockEntity barrelEntity)) {
             return;

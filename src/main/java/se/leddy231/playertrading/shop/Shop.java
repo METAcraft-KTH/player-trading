@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -68,49 +69,36 @@ public class Shop {
     }
 
     public static @Nullable Shop loadFromTag(CompoundTag tag, SkullBlockEntity entity, HolderLookup.Provider provider) {
-        if (!tag.hasUUID(OWNER_TAG)) {
+        var ownerOpt = tag.read(OWNER_TAG, UUIDUtil.CODEC);
+        if (ownerOpt.isEmpty()) {
             return null;
         }
 
-        var owner = tag.getUUID(OWNER_TAG);
+        var owner = ownerOpt.get();
         var shop = new Shop(owner, entity);
 
-        if (tag.contains(TYPE_TAG)) {
-            shop.shopType = ShopType.fromInt(tag.getInt(TYPE_TAG));
-        }
+        shop.shopType = ShopType.fromInt(tag.getIntOr(TYPE_TAG, 0));
 
-        if (tag.contains(CONFIG_TAG)) {
-            var subTag = tag.getCompound(CONFIG_TAG);
-            ContainerHelper.loadAllItems(subTag, shop.configContainer.items, provider);
-        }
+        var subTag = tag.getCompoundOrEmpty(CONFIG_TAG);
+        ContainerHelper.loadAllItems(subTag, shop.configContainer.items, provider);
 
         shop.conditions.clear(); //data remove will work since we clear here.
-        if (tag.contains(CONDITIONS)) {
-            //TODO Use the new 1.21.5 syntax for putting codecs neatly (tag.get(<name>, <codec>)).
-            CONDITIONS_CODEC.parse(provider.createSerializationContext(NbtOps.INSTANCE), tag.get(CONDITIONS)).resultOrPartial(
-                    PlayerTrading.LOGGER::error
-            ).ifPresent(
-		            shop.conditions::putAll
-            );
-        }
+        tag.read(CONDITIONS, CONDITIONS_CODEC, provider.createSerializationContext(NbtOps.INSTANCE)).ifPresent(
+                shop.conditions::putAll
+        );
         shop.updateConditionsCache();
 
         return shop;
     }
 
     public void saveAsTag(CompoundTag tag, HolderLookup.Provider provider) {
-        tag.putUUID(OWNER_TAG, owner);
+        tag.store(OWNER_TAG, UUIDUtil.CODEC, owner);
         tag.putInt(TYPE_TAG, shopType.toInt());
         tag.put(CONFIG_TAG, ContainerHelper.saveAllItems(new CompoundTag(), configContainer.items, provider));
 
         var ops = provider.createSerializationContext(NbtOps.INSTANCE);
-        //TODO Use the new 1.21.5 syntax for putting codecs neatly (tag.put(<name>, <codec>, <value>)).
         if (!conditions.isEmpty()) {
-            CONDITIONS_CODEC.encodeStart(ops, conditions).resultOrPartial(
-                    PlayerTrading.LOGGER::error
-            ).ifPresent(
-                    conditions -> tag.put(CONDITIONS, conditions)
-            );
+            tag.store(CONDITIONS, CONDITIONS_CODEC, ops, conditions);
         }
     }
 
