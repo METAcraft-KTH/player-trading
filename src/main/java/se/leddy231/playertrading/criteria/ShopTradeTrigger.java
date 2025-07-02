@@ -21,7 +21,7 @@ public class ShopTradeTrigger extends SimpleCriterionTrigger<ShopTradeTrigger.Tr
 	}
 
 	public void trigger(ServerPlayer serverPlayer, Shop shop, ItemStack itemStack) {
-		LootParams lootParams = new LootParams.Builder(serverPlayer.serverLevel())
+		LootParams lootParams = new LootParams.Builder(serverPlayer.level())
 				.withParameter(LootContextParams.THIS_ENTITY, serverPlayer)
 				.withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(shop.entity.getBlockPos()))
 				.withParameter(LootContextParams.BLOCK_STATE, shop.entity.getBlockState())

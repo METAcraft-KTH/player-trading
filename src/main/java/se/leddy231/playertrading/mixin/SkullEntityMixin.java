@@ -1,8 +1,6 @@
 package se.leddy231.playertrading.mixin;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -11,6 +9,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -85,14 +85,14 @@ public class SkullEntityMixin implements ISkullEntity {
     }
 
     @Inject(at = @At("RETURN"), method = "saveAdditional")
-    public void onNbtWrite(CompoundTag compoundTag, HolderLookup.Provider provider, CallbackInfo ci) {
+    public void onNbtWrite(ValueOutput compoundTag, CallbackInfo ci) {
         if (shop != null) {
-            shop.saveAsTag(compoundTag, provider);
+            shop.saveAsTag(compoundTag);
         }
     }
 
     @Inject(at = @At("RETURN"), method = "loadAdditional")
-    public void onNbtRead(CompoundTag compoundTag, HolderLookup.Provider provider, CallbackInfo ci) {
-        shop = Shop.loadFromTag(compoundTag, entity(), provider);
+    public void onNbtRead(ValueInput compoundTag, CallbackInfo ci) {
+        shop = Shop.loadFromTag(compoundTag, entity());
     }
 }

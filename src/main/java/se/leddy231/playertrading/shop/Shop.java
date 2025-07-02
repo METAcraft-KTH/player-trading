@@ -5,11 +5,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.ContainerHelper;
@@ -23,6 +20,8 @@ import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.jetbrains.annotations.Nullable;
@@ -68,7 +67,7 @@ public class Shop {
         this.merchant = new ShopMerchant(this);
     }
 
-    public static @Nullable Shop loadFromTag(CompoundTag tag, SkullBlockEntity entity, HolderLookup.Provider provider) {
+    public static @Nullable Shop loadFromTag(ValueInput tag, SkullBlockEntity entity) {
         var ownerOpt = tag.read(OWNER_TAG, UUIDUtil.CODEC);
         if (ownerOpt.isEmpty()) {
             return null;
@@ -79,11 +78,11 @@ public class Shop {
 
         shop.shopType = ShopType.fromInt(tag.getIntOr(TYPE_TAG, 0));
 
-        var subTag = tag.getCompoundOrEmpty(CONFIG_TAG);
-        ContainerHelper.loadAllItems(subTag, shop.configContainer.items, provider);
+        var subTag = tag.childOrEmpty(CONFIG_TAG);
+        ContainerHelper.loadAllItems(subTag, shop.configContainer.items);
 
         shop.conditions.clear(); //data remove will work since we clear here.
-        tag.read(CONDITIONS, CONDITIONS_CODEC, provider.createSerializationContext(NbtOps.INSTANCE)).ifPresent(
+        tag.read(CONDITIONS, CONDITIONS_CODEC).ifPresent(
                 shop.conditions::putAll
         );
         shop.updateConditionsCache();
@@ -91,14 +90,13 @@ public class Shop {
         return shop;
     }
 
-    public void saveAsTag(CompoundTag tag, HolderLookup.Provider provider) {
+    public void saveAsTag(ValueOutput tag) {
         tag.store(OWNER_TAG, UUIDUtil.CODEC, owner);
         tag.putInt(TYPE_TAG, shopType.toInt());
-        tag.put(CONFIG_TAG, ContainerHelper.saveAllItems(new CompoundTag(), configContainer.items, provider));
+        ContainerHelper.saveAllItems(tag.child(CONFIG_TAG), configContainer.items);
 
-        var ops = provider.createSerializationContext(NbtOps.INSTANCE);
         if (!conditions.isEmpty()) {
-            tag.store(CONDITIONS, CONDITIONS_CODEC, ops, conditions);
+            tag.store(CONDITIONS, CONDITIONS_CODEC, conditions);
         }
     }
 
