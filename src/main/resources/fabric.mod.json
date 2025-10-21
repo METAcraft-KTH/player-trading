@@ -28,7 +28,7 @@
   "mixins": [
     "playertrading.mixins.json"
   ],
-
+  "accessWidener" : "playertrading.accesswidener",
   "depends": {
     "fabricloader": ">=0.11.3",
     "fabric": "*",

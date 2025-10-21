@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.CustomModelData;
+import se.leddy231.playertrading.mixin.CustomDataAccessor;
 
 import java.util.List;
 import java.util.UUID;
@@ -42,12 +43,13 @@ public class ShopKey {
         );
     }
 
+    @SuppressWarnings("ConstantValue")
     public static boolean isKey(ItemStack stack) {
         var nbt = stack.get(DataComponents.CUSTOM_DATA);
         if (nbt == null) {
             return false;
         }
-        return stack.is(Items.GOLD_INGOT) && nbt.contains(KEY_TAG);
+        return stack.is(Items.GOLD_INGOT) && ((CustomDataAccessor) (Object) nbt).getTag().contains(KEY_TAG);
     }
 
     public static boolean isKeyForUUID(ItemStack stack, UUID uuid) {
@@ -55,9 +57,7 @@ public class ShopKey {
         if (nbt == null) {
             return false;
         }
-        String key_uuid = nbt.read(Codec.STRING.fieldOf(KEY_TAG)).resultOrPartial(
-                PlayerTrading.LOGGER::error
-        ).orElse("");
+        String key_uuid = ((CustomDataAccessor) (Object) nbt).getTag().read(Codec.STRING.fieldOf(KEY_TAG)).orElse("");
         return stack.is(Items.GOLD_INGOT) && key_uuid.equals(uuid.toString());
     }
 }

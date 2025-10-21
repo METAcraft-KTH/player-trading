@@ -1,17 +1,22 @@
 package se.leddy231.playertrading;
 
+import com.google.common.collect.ImmutableMultimap;
+import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.datafixers.util.Either;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,8 +30,6 @@ public class ShopBlock {
     }
 
     public static void makeIntoShopBlock(ItemStack item) {
-        var propertyMap = new PropertyMap();
-        propertyMap.put("textures", new Property("textures", texture));
         item.set(
                 DataComponents.ITEM_NAME,
                 Component.translatableWithFallback(
@@ -35,15 +38,24 @@ public class ShopBlock {
         );
         item.set(
                 DataComponents.PROFILE,
-                new ResolvableProfile(
-                        Optional.empty(), Optional.of(SHOP_BLOCK_UUID), propertyMap
-                )
+		        new ResolvableProfile.Static(
+				        Either.right(
+						        new ResolvableProfile.Partial(
+								        Optional.empty(), Optional.of(SHOP_BLOCK_UUID),
+								        new PropertyMap(
+										        ImmutableMultimap.<String, Property>builder().put(
+												        "textures", new Property("textures", texture)
+										        ).build()
+								        )
+						        )
+				        ), PlayerSkin.Patch.EMPTY
+		        )
         );
     }
 
     public static boolean isShopBlock(SkullBlockEntity entity) {
         var ownerProfile = entity.getOwnerProfile();
-        if (ownerProfile == null || !ownerProfile.id().map(id -> id.equals(SHOP_BLOCK_UUID)).orElse(false)) {
+        if (ownerProfile == null || !ownerProfile.partialProfile().id().equals(SHOP_BLOCK_UUID)) {
             return false;
         }
         return true;

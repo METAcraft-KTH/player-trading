@@ -2,6 +2,7 @@ package se.leddy231.playertrading.shop;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FontDescription;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
@@ -12,6 +13,8 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 public class ShopConfigContainer extends SimpleContainer implements MenuProvider {
+
+	public static final FontDescription MENU_FONT = new FontDescription.Resource(ResourceLocation.fromNamespaceAndPath("playertrading", "shop_config_menu"));
 
     public boolean menuOpen = false;
 
@@ -42,7 +45,7 @@ public class ShopConfigContainer extends SimpleContainer implements MenuProvider
         //
         var fontMagic = Component.literal("abc").withStyle(style ->
             style
-                .withFont(ResourceLocation.fromNamespaceAndPath("playertrading", "shop_config_menu"))
+                .withFont(MENU_FONT)
                 .withColor(ChatFormatting.WHITE)
         );
 
