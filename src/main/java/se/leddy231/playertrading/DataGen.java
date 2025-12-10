@@ -7,15 +7,15 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.advancements.critereon.PlayerTrigger;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.criterion.PlayerTrigger;
+import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
@@ -38,7 +38,7 @@ public class DataGen implements DataGeneratorEntrypoint {
 							public void buildRecipes() {
 								var shopBlock = ResourceKey.create(
 										Registries.RECIPE,
-										ResourceLocation.fromNamespaceAndPath(PlayerTrading.MODID, "shop_block")
+										Identifier.fromNamespaceAndPath(PlayerTrading.MODID, "shop_block")
 								);
 								Advancement.Builder builder = recipeOutput.advancement().addCriterion(
 										"has_the_recipe", RecipeUnlockedTrigger.unlocked(shopBlock)
@@ -69,7 +69,7 @@ public class DataGen implements DataGeneratorEntrypoint {
 												),
 												ShopBlock.SHOP_HEAD_BLOCK.copy()
 										),
-										builder.build(shopBlock.location().withPrefix("recipes/" + RecipeCategory.MISC.getFolderName() + "/"))
+										builder.build(shopBlock.identifier().withPrefix("recipes/" + RecipeCategory.MISC.getFolderName() + "/"))
 								);
 							}
 						};

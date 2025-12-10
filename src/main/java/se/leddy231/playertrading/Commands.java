@@ -3,10 +3,11 @@ package se.leddy231.playertrading;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.permissions.Permissions;
 
 public class Commands {
     public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
-        var root = LiteralArgumentBuilder.<CommandSourceStack>literal("shop").requires(source -> source.hasPermission(4));
+        var root = LiteralArgumentBuilder.<CommandSourceStack>literal("shop").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_OWNER));
         root.then(LiteralArgumentBuilder.<CommandSourceStack>literal("debug-stick").executes(DebugStick::giveDebugStick));
         root.then(LiteralArgumentBuilder.<CommandSourceStack>literal("make-admin-stick").executes(DebugStick::giveAdminStick));
         root.then(LiteralArgumentBuilder.<CommandSourceStack>literal("make-single-use-stick").executes(DebugStick::giveSingleUseStick));

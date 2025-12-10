@@ -181,6 +181,6 @@ public class ShopMerchant implements Merchant {
     @Override
     public boolean stillValid(Player player) {
         return this.getTradingPlayer() == player && !shop.entity.isRemoved() &&
-                player.canInteractWithEntity(new AABB(shop.entity.getBlockPos()), 4.0);
+                player.isWithinEntityInteractionRange(new AABB(shop.entity.getBlockPos()), 4.0);
     }
 }

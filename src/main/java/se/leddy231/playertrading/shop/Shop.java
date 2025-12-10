@@ -9,6 +9,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -109,7 +110,7 @@ public class Shop {
             return true;
         }
         var usedItem = player.getMainHandItem();
-        if (player.hasPermissions(4) && DebugStick.isDebugStick(usedItem)) {
+        if (player.permissions().hasPermission(Permissions.COMMANDS_OWNER) && DebugStick.isDebugStick(usedItem)) {
             return true;
         }
         if (ShopKey.isKeyForUUID(usedItem, owner)) {
@@ -127,7 +128,7 @@ public class Shop {
             return InteractionResult.SUCCESS;
         }
 
-        if (player.hasPermissions(4) && DebugStick.isMakeAdminStick(usedItem)) {
+        if (player.permissions().hasPermission(Permissions.COMMANDS_OWNER) && DebugStick.isMakeAdminStick(usedItem)) {
             shopType = ShopType.ADMIN;
             Utils.sendMessage(
                     player,
@@ -138,7 +139,7 @@ public class Shop {
             return InteractionResult.SUCCESS;
         }
 
-        if (player.hasPermissions(4) && DebugStick.isMakeSingleUseStick(usedItem)) {
+        if (player.permissions().hasPermission(Permissions.COMMANDS_OWNER) && DebugStick.isMakeSingleUseStick(usedItem)) {
             shopType = ShopType.SINGLEUSE;
             merchant.hasTraded = false; //reset just in case
             Utils.sendMessage(
