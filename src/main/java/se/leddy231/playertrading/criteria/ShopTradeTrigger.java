@@ -7,8 +7,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContextSource;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.NonNull;
 import se.leddy231.playertrading.shop.Shop;
 
 import java.util.Optional;
@@ -47,9 +50,9 @@ public class ShopTradeTrigger extends SimpleCriterionTrigger<ShopTradeTrigger.Tr
 		}
 
 		@Override
-		public void validate(CriterionValidator criterionValidator) {
+		public void validate(@NonNull ValidationContextSource criterionValidator) {
 			SimpleCriterionTrigger.SimpleInstance.super.validate(criterionValidator);
-			criterionValidator.validateEntity(this.shop, ".shop");
+			Validatable.validate(criterionValidator.entityContext(), "shop", this.shop);
 		}
 	}
 

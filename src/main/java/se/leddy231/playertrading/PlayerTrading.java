@@ -13,8 +13,6 @@ public class PlayerTrading implements ModInitializer {
     @Override
     public void onInitialize() {
         ShopCriteriaTriggers.init();
-        DebugStick.initStick();
-        ShopBlock.initShopBlock();
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             Commands.registerCommands(dispatcher);
         });

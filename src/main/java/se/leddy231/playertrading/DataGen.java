@@ -18,10 +18,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.ShapedRecipe;
-import net.minecraft.world.item.crafting.ShapedRecipePattern;
+import net.minecraft.world.item.crafting.*;
 
 import java.util.Map;
 import java.util.Optional;
@@ -54,8 +51,11 @@ public class DataGen implements DataGeneratorEntrypoint {
 								recipeOutput.accept(
 										shopBlock,
 										new ShapedRecipe(
-												"playertrading",
-												CraftingBookCategory.MISC,
+												new Recipe.CommonInfo(true),
+												new CraftingRecipe.CraftingBookInfo(
+														CraftingBookCategory.MISC,
+														"playertrading"
+												),
 												ShapedRecipePattern.of(
 														Map.of(
 																'A', tag(ItemTags.WOOL),
@@ -67,7 +67,7 @@ public class DataGen implements DataGeneratorEntrypoint {
 														"BCB",
 														"BDB"
 												),
-												ShopBlock.SHOP_HEAD_BLOCK.copy()
+												ShopBlock.SHOP_HEAD_BLOCK
 										),
 										builder.build(shopBlock.identifier().withPrefix("recipes/" + RecipeCategory.MISC.getFolderName() + "/"))
 								);

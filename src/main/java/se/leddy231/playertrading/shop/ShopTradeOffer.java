@@ -27,7 +27,7 @@ public class ShopTradeOffer extends MerchantOffer {
 
     private static ItemCost fromStack(ItemStack stack) {
         return new ItemCost(
-                stack.getItemHolder(), stack.getCount(), //DataComponentPredicate does not support checking for removed components.
+                stack.typeHolder(), stack.getCount(), //DataComponentPredicate does not support checking for removed components.
                 DataComponentExactPredicate.allOf(stack.getComponentsPatch().split().added()), stack
         );
     }

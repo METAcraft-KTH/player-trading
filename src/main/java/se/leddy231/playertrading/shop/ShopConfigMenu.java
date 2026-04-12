@@ -3,7 +3,7 @@ package se.leddy231.playertrading.shop;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 
@@ -23,30 +23,30 @@ public class ShopConfigMenu extends ChestMenu {
     }
 
     @Override
-    public void clicked(int slotId, int button, ClickType clickType, Player player) {
+    public void clicked(int slotId, int button, ContainerInput ContainerInput, Player player) {
         var isConfigSlots = slotId >= 0 && slotId < getContainer().getContainerSize();
 
         // Clear ghost item
-        if (clickType == ClickType.QUICK_MOVE && isConfigSlots) {
+        if (ContainerInput == ContainerInput.QUICK_MOVE && isConfigSlots) {
             getSlot(slotId).set(ItemStack.EMPTY);
             return;
         }
-        if (clickType == ClickType.QUICK_CRAFT) {
+        if (ContainerInput == ContainerInput.QUICK_CRAFT) {
 
             if (slotId == -999) {
                 if (button == 2) {
-                    clicked(quickCraftSlot, 0, ClickType.PICKUP, player);
+                    clicked(quickCraftSlot, 0, ContainerInput.PICKUP, player);
                 }
                 if (button == 6) {
-                    clicked(quickCraftSlot, 1, ClickType.PICKUP, player);
+                    clicked(quickCraftSlot, 1, ContainerInput.PICKUP, player);
                 }
             } else {
                 quickCraftSlot = slotId;
             }
         }
-        if (clickType == ClickType.PICKUP) {
+        if (ContainerInput == ContainerInput.PICKUP) {
             if (!isConfigSlots) {
-                super.clicked(slotId, button, clickType, player);
+                super.clicked(slotId, button, ContainerInput, player);
                 return;
             }
             ItemStack carried = getCarried();

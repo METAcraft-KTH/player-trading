@@ -1,57 +1,50 @@
 package se.leddy231.playertrading;
 
 import com.google.common.collect.ImmutableMultimap;
-import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 public class ShopBlock {
-    public static final ItemStack SHOP_HEAD_BLOCK = new ItemStack(Items.PLAYER_HEAD, 1);
-    public static final UUID SHOP_BLOCK_UUID = UUID.fromString("8df67171-1b9a-4eae-b35d-b03a56f8dacb");
-    public static final String texture = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvN2UzZGViNTdlYWEyZjRkNDAzYWQ1NzI4M2NlOGI0MTgwNWVlNWI2ZGU5MTJlZTJiNGVhNzM2YTlkMWY0NjVhNyJ9fX0=";
-
-    public static void initShopBlock() {
-        makeIntoShopBlock(SHOP_HEAD_BLOCK);
-    }
-
-    public static void makeIntoShopBlock(ItemStack item) {
-        item.set(
-                DataComponents.ITEM_NAME,
-                Component.translatableWithFallback(
-                        "item.playertrading.shop", "Shop"
-                ).withStyle(style -> style.withItalic(false).withColor(ChatFormatting.WHITE))
-        );
-        item.set(
-                DataComponents.PROFILE,
-		        new ResolvableProfile.Static(
-				        Either.right(
-						        new ResolvableProfile.Partial(
-								        Optional.empty(), Optional.of(SHOP_BLOCK_UUID),
-								        new PropertyMap(
-										        ImmutableMultimap.<String, Property>builder().put(
-												        "textures", new Property("textures", texture)
-										        ).build()
-								        )
-						        )
-				        ), PlayerSkin.Patch.EMPTY
-		        )
-        );
-    }
+	public static final UUID SHOP_BLOCK_UUID = UUID.fromString("8df67171-1b9a-4eae-b35d-b03a56f8dacb");
+	public static final String texture = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvN2UzZGViNTdlYWEyZjRkNDAzYWQ1NzI4M2NlOGI0MTgwNWVlNWI2ZGU5MTJlZTJiNGVhNzM2YTlkMWY0NjVhNyJ9fX0=";
+    public static final ItemStackTemplate SHOP_HEAD_BLOCK = new ItemStackTemplate(
+		    Items.PLAYER_HEAD, DataComponentPatch.builder().set(
+				    DataComponents.ITEM_NAME,
+				    Component.translatableWithFallback(
+						    "item.playertrading.shop", "Shop"
+				    ).withStyle(style -> style.withItalic(false).withColor(ChatFormatting.WHITE))
+            ).set(
+				    DataComponents.PROFILE,
+				    new ResolvableProfile.Static(
+						    Either.right(
+								    new ResolvableProfile.Partial(
+										    Optional.empty(), Optional.of(SHOP_BLOCK_UUID),
+										    new PropertyMap(
+												    ImmutableMultimap.<String, Property>builder().put(
+														    "textures", new Property("textures", texture)
+												    ).build()
+										    )
+								    )
+						    ), PlayerSkin.Patch.EMPTY
+				    )
+		    ).build()
+    );
 
     public static boolean isShopBlock(SkullBlockEntity entity) {
         var ownerProfile = entity.getOwnerProfile();
@@ -63,7 +56,7 @@ public class ShopBlock {
 
     public static int giveShopBlock(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        ItemStack stack = SHOP_HEAD_BLOCK.copy();
+        ItemStack stack = SHOP_HEAD_BLOCK.create();
         source.getPlayer().addItem(stack);
         return 0;
     }
